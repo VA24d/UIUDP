@@ -1,0 +1,119 @@
+<h2 class="title">Drive Preferences</h2>
+<p class="subtitle">Adjust each setting and watch the live preview respond.</p>
+
+<div class="tune-layout">
+    <!-- Visual Preview -->
+    <div class="tune-preview" id="tune-preview">
+        <!-- Road with car -->
+        <div class="tune-road">
+            <div class="road-surface">
+                <div class="lane-mark left"></div>
+                <div class="lane-mark center-l"></div>
+                <div class="lane-mark center-r"></div>
+                <div class="lane-mark right"></div>
+            </div>
+            <!-- Lead car -->
+            <div class="lead-car" id="lead-car">
+                <i class="ph-fill ph-car-profile"></i>
+            </div>
+            <!-- Your car -->
+            <div class="your-car" id="your-car">
+                <i class="ph-fill ph-car-profile"></i>
+                <div class="bolster-indicator" id="bolster-ind">
+                    <div class="bolster-bar left" id="bolster-l"></div>
+                    <div class="bolster-bar right" id="bolster-r"></div>
+                </div>
+            </div>
+            <!-- Distance indicator -->
+            <div class="dist-label" id="dist-label">
+                <span id="dist-meters">45m</span>
+            </div>
+        </div>
+        <!-- Speed + G-force readout -->
+        <div class="tune-readout">
+            <div class="readout-item">
+                <span class="readout-val" id="preview-speed">65</span>
+                <span class="readout-unit">MPH</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-val" id="preview-gforce">0.3</span>
+                <span class="readout-unit">G-Force</span>
+            </div>
+            <div class="seat-tilt-icon" id="seat-tilt-icon">
+                <i class="ph ph-arrow-bend-up-right"></i>
+                <span id="tilt-label">Gentle</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="tune-controls">
+        <!-- Speed / Acceleration -->
+        <div class="tune-card" id="tune-speed">
+            <div class="tune-card-header">
+                <i class="ph ph-gauge"></i>
+                <span>Acceleration</span>
+                <span class="tune-val" id="val-accel">Standard</span>
+            </div>
+            <div class="tune-options">
+                <button class="tune-opt" data-val="1" onclick="setAccel(1)">
+                    <i class="ph ph-leaf"></i>
+                    <span>Smooth</span>
+                    <small>Gentle acceleration, relaxed braking</small>
+                </button>
+                <button class="tune-opt active" data-val="2" onclick="setAccel(2)">
+                    <i class="ph ph-equals"></i>
+                    <span>Standard</span>
+                    <small>Balanced response, natural feel</small>
+                </button>
+                <button class="tune-opt" data-val="3" onclick="setAccel(3)">
+                    <i class="ph ph-lightning"></i>
+                    <span>Dynamic</span>
+                    <small>Quick response, seat bolsters engage</small>
+                </button>
+            </div>
+        </div>
+
+        <!-- Following Distance -->
+        <div class="tune-card" id="tune-dist">
+            <div class="tune-card-header">
+                <i class="ph ph-arrows-horizontal"></i>
+                <span>Following Distance</span>
+                <span class="tune-val" id="val-dist">Far</span>
+            </div>
+            <div class="tune-options">
+                <button class="tune-opt" data-val="1" onclick="setDist(1)">
+                    <span>Close</span>
+                    <small>25m gap</small>
+                </button>
+                <button class="tune-opt" data-val="2" onclick="setDist(2)">
+                    <span>Medium</span>
+                    <small>35m gap</small>
+                </button>
+                <button class="tune-opt active" data-val="3" onclick="setDist(3)">
+                    <span>Far</span>
+                    <small>45m gap</small>
+                </button>
+            </div>
+        </div>
+
+        <!-- Lane Preference -->
+        <div class="tune-card" id="tune-lane">
+            <div class="tune-card-header">
+                <i class="ph ph-swap"></i>
+                <span>Lane Preference</span>
+                <span class="tune-val" id="val-lane">Center</span>
+            </div>
+            <div class="tune-options horizontal">
+                <button class="tune-opt" data-val="1" onclick="setLane(1)">Left</button>
+                <button class="tune-opt active" data-val="2" onclick="setLane(2)">Center</button>
+                <button class="tune-opt" data-val="3" onclick="setLane(3)">Right</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="controls">
+    <button class="btn btn-secondary" onclick="loadStep(5)">Back</button>
+    <button class="btn btn-primary" onclick="completeSetup()">Complete Setup <i class="ph ph-check-circle"></i></button>
+</div>

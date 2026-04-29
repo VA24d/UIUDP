@@ -1,0 +1,60 @@
+<div class="sim-screen">
+    <!-- Stage 1: Autonomous driving — calm -->
+    <div class="sim-stage active" id="sim-stage-1">
+        <div class="road-animation">
+            <div class="road-line"></div>
+            <div class="road-line"></div>
+            <div class="road-line"></div>
+        </div>
+        <div class="sim-hud-overlay">
+            <div class="sim-speed">65 <small>MPH</small></div>
+            <div class="sim-mode auto"><i class="ph-fill ph-robot"></i> AUTONOMOUS</div>
+        </div>
+        <p class="sim-caption">Driving autonomously on the highway...</p>
+    </div>
+
+    <!-- Stage 2: Warning — urgent -->
+    <div class="sim-stage" id="sim-stage-2">
+        <div class="road-animation warning-flash">
+            <div class="road-line"></div>
+            <div class="road-line"></div>
+            <div class="road-line"></div>
+        </div>
+        <div class="warning-overlay">
+            <div class="warning-wheel">
+                <i class="ph-fill ph-steering-wheel"></i>
+            </div>
+            <div class="warning-msg">UNMAPPED ZONE — TAKE CONTROL</div>
+            <div class="countdown-ring" id="countdown-ring">
+                <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="44" class="countdown-bg"/>
+                    <circle cx="50" cy="50" r="44" class="countdown-progress" id="countdown-circle"/>
+                </svg>
+                <span class="countdown-num" id="countdown-num">10</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stage 3: Success -->
+    <div class="sim-stage" id="sim-stage-3">
+        <div class="success-anim">
+            <i class="ph-fill ph-check-circle"></i>
+            <h3>Manual Control Active</h3>
+            <p>You responded in <span id="response-time">—</span> seconds</p>
+        </div>
+    </div>
+</div>
+
+<!-- Hold-to-override (only visible in stage 2) -->
+<div class="sim-action hidden" id="sim-action">
+    <p class="sim-instruction">PRESS AND HOLD to take control of the vehicle</p>
+    <button id="btn-hold" class="hold-btn">
+        <div class="hold-fill" id="hold-fill"></div>
+        <span style="position:relative;z-index:2;"><i class="ph ph-hand-grabbing" style="margin-right:6px;"></i> GRIP STEERING WHEEL</span>
+    </button>
+</div>
+
+<div class="controls">
+    <button class="btn btn-secondary" onclick="loadStep(4)">Back</button>
+    <button class="btn btn-primary" id="btn-next-5" disabled onclick="loadStep(6)">Continue <i class="ph ph-arrow-right"></i></button>
+</div>

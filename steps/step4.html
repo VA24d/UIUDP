@@ -1,0 +1,159 @@
+<h2 class="title">How Your Car Drives</h2>
+<p class="subtitle">Swipe through each section. Say "next" to advance.</p>
+
+<!-- Guided walkthrough slides -->
+<div class="learn-slideshow" id="learn-slideshow">
+
+    <!-- Slide 1: Capabilities -->
+    <div class="learn-slide active" id="ls-1">
+        <div class="slide-header">
+            <div class="slide-icon blue"><i class="ph ph-road-horizon"></i></div>
+            <div>
+                <h3>Level 4 Autonomy</h3>
+                <span class="slide-tag">What your car can do</span>
+            </div>
+        </div>
+        <div class="can-cant">
+            <div class="can-col">
+                <div class="col-label"><i class="ph-fill ph-check-circle" style="color:#00ff88;"></i> CAN</div>
+                <ul>
+                    <li>Highway autopilot at any speed</li>
+                    <li>City navigation on mapped roads</li>
+                    <li>Auto-park in tight spaces</li>
+                    <li>Read traffic signs & signals</li>
+                    <li>Overtake slower vehicles</li>
+                </ul>
+            </div>
+            <div class="cant-col">
+                <div class="col-label"><i class="ph-fill ph-x-circle" style="color:#ff3366;"></i> CAN'T</div>
+                <ul>
+                    <li>Drive on unmapped roads</li>
+                    <li>Navigate heavy construction</li>
+                    <li>Operate in extreme weather</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: Safety -->
+    <div class="learn-slide" id="ls-2">
+        <div class="slide-header">
+            <div class="slide-icon green"><i class="ph ph-shield-check"></i></div>
+            <div>
+                <h3>360° Safety Shield</h3>
+                <span class="slide-tag">Always protecting you</span>
+            </div>
+        </div>
+        <div class="sensor-ring-container">
+            <div class="sensor-ring">
+                <div class="ring-label">12 Cameras</div>
+                <div class="ring-dot" style="top:0;left:50%;"></div>
+                <div class="ring-dot" style="top:15%;left:85%;"></div>
+                <div class="ring-dot" style="top:50%;left:100%;"></div>
+                <div class="ring-dot" style="top:85%;left:85%;"></div>
+                <div class="ring-dot" style="bottom:0;left:50%;"></div>
+                <div class="ring-dot" style="top:85%;left:15%;"></div>
+                <div class="ring-dot" style="top:50%;left:0;"></div>
+                <div class="ring-dot" style="top:15%;left:15%;"></div>
+                <div class="car-silhouette"><i class="ph-fill ph-car-profile"></i></div>
+            </div>
+            <div class="safety-features">
+                <div class="sf"><i class="ph ph-scan"></i> LIDAR mapping</div>
+                <div class="sf"><i class="ph ph-hand-palm"></i> Auto emergency braking</div>
+                <div class="sf"><i class="ph ph-person"></i> Pedestrian detection</div>
+                <div class="sf"><i class="ph ph-moon"></i> Night vision</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Charging -->
+    <div class="learn-slide" id="ls-3">
+        <div class="slide-header">
+            <div class="slide-icon amber"><i class="ph ph-lightning"></i></div>
+            <div>
+                <h3>Charging & Range</h3>
+                <span class="slide-tag">Stay powered up</span>
+            </div>
+        </div>
+        <div class="charge-visual">
+            <div class="charge-bar-wrap">
+                <div class="charge-bar-bg">
+                    <div class="charge-bar-fill" id="charge-bar-fill"></div>
+                </div>
+                <div class="charge-markers">
+                    <span>0%</span><span>20%</span><span>50%</span><span>80%</span><span>100%</span>
+                </div>
+            </div>
+            <div class="charge-stats">
+                <div class="cstat"><span class="cnum">320</span><span class="cunit">mi range</span></div>
+                <div class="cstat highlight"><span class="cnum">20</span><span class="cunit">min → 80%</span></div>
+            </div>
+            <p class="charge-note">The car pre-heats the battery while navigating to a charger for optimal speed.</p>
+        </div>
+    </div>
+
+    <!-- Slide 4: TAKE-OVER (Critical) -->
+    <div class="learn-slide" id="ls-4">
+        <div class="slide-header">
+            <div class="slide-icon red"><i class="ph ph-warning-circle"></i></div>
+            <div>
+                <h3>When YOU Must Drive</h3>
+                <span class="slide-tag critical-tag">⚠ Critical — read carefully</span>
+            </div>
+        </div>
+        <div class="takeover-timeline">
+            <div class="tl-step" id="tl-1">
+                <div class="tl-marker">1</div>
+                <div class="tl-body">
+                    <h4>Trigger</h4>
+                    <p>Unmapped zone, heavy construction, sensor blockage, or extreme weather ahead.</p>
+                </div>
+            </div>
+            <div class="tl-connector"></div>
+            <div class="tl-step" id="tl-2">
+                <div class="tl-marker">2</div>
+                <div class="tl-body">
+                    <h4>Warning — 10 seconds</h4>
+                    <p>The steering wheel glows <span class="red-text">RED</span>. A chime sounds. A countdown appears on the HUD.</p>
+                    <div class="tl-preview">
+                        <div class="wheel-icon pulsing"><i class="ph-fill ph-steering-wheel"></i></div>
+                        <div class="countdown-preview">10s</div>
+                    </div>
+                </div>
+            </div>
+            <div class="tl-connector"></div>
+            <div class="tl-step" id="tl-3">
+                <div class="tl-marker">3</div>
+                <div class="tl-body">
+                    <h4>Your Action</h4>
+                    <p><strong>Grip the steering wheel firmly</strong> with both hands. The system confirms handoff with a <span class="green-text">green pulse</span>.</p>
+                </div>
+            </div>
+            <div class="tl-connector"></div>
+            <div class="tl-step warning-step" id="tl-4">
+                <div class="tl-marker">!</div>
+                <div class="tl-body">
+                    <h4>If You Don't Respond</h4>
+                    <p>Hazard lights activate → gentle deceleration → signal → safe stop on the road shoulder.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide navigation -->
+<div class="slide-nav">
+    <div class="slide-indicators" id="slide-indicators">
+        <div class="s-ind active" onclick="goSlide(1)"></div>
+        <div class="s-ind" onclick="goSlide(2)"></div>
+        <div class="s-ind" onclick="goSlide(3)"></div>
+        <div class="s-ind critical-ind" onclick="goSlide(4)"></div>
+    </div>
+    <span class="slide-counter" id="slide-counter">1 / 4</span>
+</div>
+
+<div class="controls">
+    <button class="btn btn-secondary" onclick="loadStep(3)">Back</button>
+    <button class="btn btn-secondary" id="btn-slide-prev" onclick="prevSlide()" disabled>← Prev</button>
+    <button class="btn btn-primary" id="btn-slide-next" onclick="nextSlide()">Next Topic <i class="ph ph-arrow-right"></i></button>
+</div>

@@ -1,0 +1,31 @@
+<h2 class="title">Location Presets</h2>
+<p class="subtitle">Set your frequent destinations for autonomous routing.</p>
+
+<div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+    <div class="slider-group" style="display: flex; align-items: center; gap: 15px;">
+        <i class="ph ph-house" style="font-size: 24px; color: var(--accent-blue); flex-shrink: 0;"></i>
+        <div style="flex-grow: 1;">
+            <div class="input-group" style="margin-bottom: 0;">
+                <label>Home Address</label>
+                <input type="text" class="text-input" placeholder="Enter your home address..." value="123 Horizon Blvd, Techville">
+            </div>
+        </div>
+    </div>
+    <div class="slider-group" style="display: flex; align-items: center; gap: 15px;">
+        <i class="ph ph-briefcase" style="font-size: 24px; color: var(--accent-blue); flex-shrink: 0;"></i>
+        <div style="flex-grow: 1;">
+            <div class="input-group" style="margin-bottom: 0;">
+                <label>Work Address</label>
+                <input type="text" class="text-input" placeholder="Enter your work address..." value="AeroSpace HQ, Sector 7">
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 5px;" onclick="this.parentElement.insertAdjacentHTML('beforeend', '<div class=\'slider-group\' style=\'display:flex;align-items:center;gap:15px;\'><i class=\'ph ph-map-pin\' style=\'font-size:24px;color:var(--accent-blue);flex-shrink:0;\'></i><div style=\'flex-grow:1;\'><div class=\'input-group\' style=\'margin-bottom:0;\'><label>Custom Preset</label><input type=\'text\' class=\'text-input\' placeholder=\'Enter address...\'></div></div></div>')">
+        <i class="ph ph-plus"></i> Add Another Preset
+    </button>
+</div>
+
+<div class="controls">
+    <button class="btn btn-secondary" onclick="loadStep(2)">Back</button>
+    <button class="btn btn-primary" onclick="loadStep(4)">Save & Continue <i class="ph ph-arrow-right"></i></button>
+</div>

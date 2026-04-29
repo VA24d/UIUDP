@@ -1,0 +1,73 @@
+<h2 class="title">Cabin Comfort</h2>
+<p class="subtitle">Tap the seat zones to adjust. The car adapts in real-time.</p>
+
+<div class="comfort-layout">
+    <!-- Interactive Seat Diagram -->
+    <div class="seat-visual">
+        <img src="seat.png" alt="Seat" class="seat-img" id="seat-img">
+        <!-- Clickable hotspots on the seat -->
+        <div class="hotspot headrest" id="hs-headrest" data-label="Headrest" onclick="selectZone('headrest')">
+            <div class="hotspot-pulse"></div>
+        </div>
+        <div class="hotspot backrest" id="hs-backrest" data-label="Backrest" onclick="selectZone('backrest')">
+            <div class="hotspot-pulse"></div>
+        </div>
+        <div class="hotspot lumbar" id="hs-lumbar" data-label="Lumbar" onclick="selectZone('lumbar')">
+            <div class="hotspot-pulse"></div>
+        </div>
+        <div class="hotspot cushion" id="hs-cushion" data-label="Seat Base" onclick="selectZone('cushion')">
+            <div class="hotspot-pulse"></div>
+        </div>
+    </div>
+
+    <!-- Adjustment Panel (changes based on selected zone) -->
+    <div class="adjust-panel" id="adjust-panel">
+        <div class="zone-label" id="zone-label">Tap a seat zone to begin</div>
+        <div class="zone-controls hidden" id="zone-controls">
+            <div class="adj-row">
+                <span class="adj-label" id="adj-label-1">Height</span>
+                <div class="adj-btns">
+                    <button class="adj-btn" onclick="adjustSeat(-1)"><i class="ph ph-minus"></i></button>
+                    <span class="adj-val" id="adj-val">5</span>
+                    <button class="adj-btn" onclick="adjustSeat(1)"><i class="ph ph-plus"></i></button>
+                </div>
+            </div>
+            <div class="adj-row">
+                <span class="adj-label" id="adj-label-2">Tilt</span>
+                <div class="adj-btns">
+                    <button class="adj-btn" onclick="adjustTilt(-1)"><i class="ph ph-arrow-bend-left-down"></i></button>
+                    <span class="adj-val" id="tilt-val">0°</span>
+                    <button class="adj-btn" onclick="adjustTilt(1)"><i class="ph ph-arrow-bend-right-down"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="comfort-extras">
+            <div class="extra-row">
+                <i class="ph ph-thermometer-simple"></i>
+                <span>Climate</span>
+                <div class="temp-control">
+                    <button class="adj-btn" onclick="changeTemp(-1)"><i class="ph ph-minus"></i></button>
+                    <span id="temp-display">72°F</span>
+                    <button class="adj-btn" onclick="changeTemp(1)"><i class="ph ph-plus"></i></button>
+                </div>
+            </div>
+            <div class="extra-row">
+                <i class="ph ph-lamp"></i>
+                <span>Ambient</span>
+                <div class="color-picker">
+                    <div class="color-dot active" style="background:#0088ff;" onclick="pickColor(this)"></div>
+                    <div class="color-dot" style="background:#b300ff;" onclick="pickColor(this)"></div>
+                    <div class="color-dot" style="background:#ff3366;" onclick="pickColor(this)"></div>
+                    <div class="color-dot" style="background:#00ff88;" onclick="pickColor(this)"></div>
+                    <div class="color-dot" style="background:#ffb800;" onclick="pickColor(this)"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="controls">
+    <button class="btn btn-secondary" onclick="loadStep(1)">Back</button>
+    <button class="btn btn-primary" onclick="loadStep(3)">Save & Continue <i class="ph ph-arrow-right"></i></button>
+</div>

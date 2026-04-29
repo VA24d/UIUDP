@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroDrive — First Time Setup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <!-- Clean Side-by-Side Presentation Layout -->
+    <div class="cockpit-layout">
+        
+        <!-- Central Display (Main Infotainment) -->
+        <div id="central-display" class="central-display">
+            <aside class="sidebar">
+                <div class="logo">
+                    <div class="logo-icon"><i class="ph-fill ph-steering-wheel"></i></div>
+                    <span>AeroDrive</span>
+                </div>
+                <ul class="nav-steps">
+                    <li class="active" id="nav-step-1">
+                        <div class="nav-icon"><i class="ph-fill ph-user"></i></div>
+                        <span>Profile</span>
+                    </li>
+                    <li id="nav-step-2">
+                        <div class="nav-icon"><i class="ph-fill ph-armchair"></i></div>
+                        <span>Comfort</span>
+                    </li>
+                    <li id="nav-step-3">
+                        <div class="nav-icon"><i class="ph-fill ph-map-pin"></i></div>
+                        <span>Locations</span>
+                    </li>
+                    <li id="nav-step-4">
+                        <div class="nav-icon"><i class="ph-fill ph-student"></i></div>
+                        <span>Learn</span>
+                    </li>
+                    <li id="nav-step-5">
+                        <div class="nav-icon"><i class="ph-fill ph-warning-circle"></i></div>
+                        <span>Take-Over</span>
+                    </li>
+                    <li id="nav-step-6">
+                        <div class="nav-icon"><i class="ph-fill ph-sliders-horizontal"></i></div>
+                        <span>Tuning</span>
+                    </li>
+                </ul>
+            </aside>
+            <main class="main-content">
+                <div id="module-container" class="module-container">
+                    <!-- Step content loaded here dynamically -->
+                </div>
+            </main>
+            <!-- Voice Activity Bar -->
+            <div class="voice-bar">
+                <button class="mic-toggle" id="mic-toggle" onclick="toggleMic()">
+                    <i class="ph-fill ph-microphone"></i>
+                </button>
+                <i class="ph-fill ph-speaker-high" id="speaker-icon"></i>
+                <div class="voice-info">
+                    <span class="voice-text" id="voice-text">Mic off — tap to listen</span>
+                    <span class="voice-heard" id="voice-heard"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Driver Dashboard (Instrument Cluster) -->
+        <div id="hud" class="hud-container">
+            <div class="hud-top">
+                <div class="gear-indicator">
+                    <span class="gear active">P</span>
+                    <span class="gear">R</span>
+                    <span class="gear">N</span>
+                    <span class="gear">D</span>
+                </div>
+                <div class="system-status text-green" id="hud-status">
+                    <i class="ph-fill ph-check-circle"></i> Diagnostics OK
+                </div>
+            </div>
+
+            <!-- Dynamic step context -->
+            <div class="hud-context" id="hud-context">
+                <span class="hud-context-label" id="hud-context-label">INITIALIZING</span>
+                <div class="hud-progress">
+                    <div class="hud-progress-fill" id="hud-progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="hud-center">
+                <div class="battery-status">
+                    <i class="ph-fill ph-battery-full" style="font-size: 28px;"></i>
+                    <h2>85%</h2>
+                    <small>320 mi Range</small>
+                </div>
+                
+                <!-- Alert Overlay -->
+                <div id="hud-alert" class="hud-alert hidden">
+                    <i class="ph-fill ph-info"></i>
+                    <h2 id="hud-alert-text">Calibration Updated</h2>
+                </div>
+            </div>
+            
+            <div class="hud-bottom">
+                <div class="g-force-meter">
+                    <label>Drive Profile</label>
+                    <div class="bar-container">
+                        <div id="hud-accel-bar" class="bar" style="width: 50%;"></div>
+                    </div>
+                </div>
+                <div class="following-distance">
+                    <label>Safety Margin</label>
+                    <div class="dots" id="hud-dist-dots">
+                        <div class="dot active"></div>
+                        <div class="dot active"></div>
+                        <div class="dot active"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

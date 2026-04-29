@@ -1,0 +1,54 @@
+<h2 class="title">Create Your Profile</h2>
+<p class="subtitle">Let's get to know you. Speak your name to begin.</p>
+
+<div class="profile-setup" id="profile-setup">
+    <!-- Sub-step 1: Voice Name Input -->
+    <div class="setup-step active" id="setup-name">
+        <div class="voice-input" id="voice-input">
+            <div class="mic-ring" id="mic-ring">
+                <i class="ph-fill ph-microphone"></i>
+            </div>
+            <p class="voice-label">Tap the mic & say your name</p>
+        </div>
+        <div class="name-fields hidden" id="name-fields">
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="input-name" class="text-input" placeholder="Detected name..." readonly>
+            </div>
+            <div class="input-group">
+                <label>Display Name</label>
+                <input type="text" id="input-display" class="text-input" placeholder="What should the car call you?">
+            </div>
+        </div>
+    </div>
+
+    <!-- Sub-step 2: Face Registration -->
+    <div class="setup-step hidden" id="setup-face">
+        <div class="scanner" id="face-scanner">
+            <div class="scan-line"></div>
+            <i class="ph ph-user-focus"></i>
+        </div>
+        <p style="text-align:center; color: var(--text-secondary); font-size: 14px;">Look at the display to register your face.</p>
+    </div>
+
+    <!-- Sub-step 3: Voice Profile -->
+    <div class="setup-step hidden" id="setup-voice">
+        <div class="voice-wave" id="voice-wave">
+            <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+            <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+        </div>
+        <p style="text-align:center; color: var(--text-secondary); font-size: 14px; margin-top: 15px;">Say: "Hey AeroDrive, take me home."</p>
+    </div>
+</div>
+
+<!-- Progress Dots -->
+<div class="step-dots" id="step-dots">
+    <div class="step-dot active"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+</div>
+
+<div class="controls">
+    <button class="btn btn-primary" id="btn-next-1" onclick="advanceProfileSetup()">Next <i class="ph ph-arrow-right"></i></button>
+</div>
