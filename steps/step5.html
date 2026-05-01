@@ -1,3 +1,6 @@
+<h2 class="title">Take-Over Drill</h2>
+<p class="subtitle">Practice taking control from the AI. This is a safe, stationary simulation.</p>
+
 <div class="sim-screen">
     <!-- Stage 1: Autonomous driving — calm -->
     <div class="sim-stage active" id="sim-stage-1">
@@ -43,6 +46,15 @@
             <p>You responded in <span id="response-time">—</span> seconds</p>
         </div>
     </div>
+
+    <!-- Stage 4: Failsafe (timeout) -->
+    <div class="sim-stage" id="sim-stage-4">
+        <div class="success-anim">
+            <i class="ph-fill ph-warning-circle" style="color:var(--hud-alert);"></i>
+            <h3>Time Expired — Failsafe Activated</h3>
+            <p>In a real scenario, the car would now safely park itself.<br>Let's try again.</p>
+        </div>
+    </div>
 </div>
 
 <!-- Hold-to-override (only visible in stage 2) -->
@@ -52,6 +64,11 @@
         <div class="hold-fill" id="hold-fill"></div>
         <span style="position:relative;z-index:2;"><i class="ph ph-hand-grabbing" style="margin-right:6px;"></i> GRIP STEERING WHEEL</span>
     </button>
+</div>
+
+<!-- Attempt counter -->
+<div style="text-align:center; margin-top:8px;">
+    <span style="font-size:10px; color:var(--text-secondary); letter-spacing:1px;" id="attempt-counter">ATTEMPT 1</span>
 </div>
 
 <div class="controls">

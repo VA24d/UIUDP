@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AeroDrive Onboarding Storyboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Coming+Soon&family=Architects+Daughter&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Coming Soon', cursive;
+            background: #fafafa;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 0);
+            background-size: 22px 22px;
+            color: #222;
+            padding: 3rem;
+        }
+
+        /* ── Header ── */
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        .header h1 {
+            font-family: 'Architects Daughter', cursive;
+            font-size: 2.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.3rem;
+            color: #111;
+            transform: rotate(-0.5deg);
+        }
+        .header p {
+            font-size: 1.05rem;
+            color: #666;
+        }
+
+        /* ── Section Dividers ── */
+        .section-divider {
+            grid-column: 1 / -1;
+            padding: 1.2rem 0 0.4rem;
+            border-top: 2px dashed #ccc;
+        }
+        .section-divider h2 {
+            font-family: 'Architects Daughter', cursive;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #555;
+        }
+        .section-divider h2 span {
+            color: #999;
+            font-weight: 400;
+            margin-left: 8px;
+            font-size: 0.8rem;
+        }
+
+        /* ── Grid ── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.8rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* ── Panel — Hand-drawn comic style ── */
+        .panel {
+            background: #fff;
+            border: 2.5px solid #222;
+            padding: 8px;
+            position: relative;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+            overflow: hidden;
+        }
+        /* Subtle organic rotations */
+        .panel:nth-child(4n+1) { transform: rotate(-0.6deg); }
+        .panel:nth-child(4n+2) { transform: rotate(0.4deg); }
+        .panel:nth-child(4n+3) { transform: rotate(-0.3deg); }
+        .panel:nth-child(4n)   { transform: rotate(0.7deg); }
+        .panel:hover {
+            transform: scale(1.02) rotate(0deg) !important;
+            box-shadow: 8px 8px 0px rgba(0,0,0,1);
+            z-index: 10;
+        }
+        .panel.reaction {
+            border-style: dashed;
+        }
+
+        /* ── Image Area ── */
+        .image-area {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/10;
+            overflow: hidden;
+            background: #eee;
+            border: 1.5px solid #222;
+        }
+        .image-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-area img.prototype {
+            object-fit: contain;
+            background: #0a0a0c;
+        }
+
+        /* ── Badge ── */
+        .step-badge {
+            position: absolute;
+            top: 0; left: 0;
+            background: #111;
+            color: #fff;
+            font-family: 'Architects Daughter', cursive;
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            z-index: 5;
+            box-shadow: 2px 2px 0 #555;
+        }
+        .step-badge.reaction-badge {
+            background: #444;
+        }
+
+        /* ── Caption ── */
+        .caption {
+            padding: 0.8rem 0.6rem 0.6rem;
+            background: #fff;
+            border-top: 1.5px solid #222;
+            margin-top: 8px;
+            position: relative;
+            min-height: 100px;
+        }
+        .caption h3 {
+            font-family: 'Architects Daughter', cursive;
+            font-size: 0.85rem;
+            margin-bottom: 0.35rem;
+            color: #111;
+        }
+        .caption p {
+            font-size: 0.72rem;
+            line-height: 1.55;
+            color: #444;
+        }
+        .caption p strong {
+            font-family: 'Architects Daughter', cursive;
+            color: #111;
+            font-size: 0.78rem;
+        }
+
+        /* ── Quote / Speech Bubble ── */
+        .quote {
+            background: #fff;
+            border: 1.5px solid #222;
+            border-radius: 50%;
+            padding: 6px 12px;
+            margin-top: 8px;
+            font-style: italic;
+            font-size: 0.7rem;
+            color: #333;
+            align-self: flex-start;
+            max-width: 90%;
+            position: relative;
+            box-shadow: 2px 2px 0 #ddd;
+        }
+        .quote::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 20px;
+            border-width: 8px 8px 0 0;
+            border-style: solid;
+            border-color: #222 transparent;
+            display: block;
+            width: 0;
+        }
+
+        /* ── Gestalt Tag ── */
+        .gestalt-tag {
+            display: inline-block;
+            margin-top: 0.4rem;
+            padding: 2px 6px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #777;
+            text-transform: uppercase;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 2px dashed #ccc;
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        /* ── Print ── */
+        @media print {
+            body { background: #fff; padding: 0.5rem; background-image: none; }
+            .grid { gap: 1rem; }
+            .panel {
+                box-shadow: 3px 3px 0 #111;
+                break-inside: avoid;
+                page-break-inside: avoid;
+                transform: none !important;
+            }
+            .panel:hover { transform: none !important; box-shadow: 3px 3px 0 #111; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AeroDrive: The Onboarding Journey</h1>
+        <p>Use Case: Building Trust Through Interactive Calibration</p>
+    </div>
+
+    <div class="grid">
+
+        <!-- ════════════════════════════════════════════ -->
+        <div class="section-divider">
+            <h2>Phase 1 — Identity & Welcome <span>Steps 1.1 – 1.5</span></h2>
+        </div>
+
+        <!-- 1. Prototype: Profile Screen -->
+        <div class="panel">
+            <div class="image-area">
+                <img class="prototype" src="screenshots/step1.png" alt="Profile Setup Screen">
+                <div class="step-badge">Screen 1.0</div>
+            </div>
+            <div class="caption">
+                <h3>Profile Setup Interface</h3>
+                <p>The central display presents the <strong>voice-first profile creation</strong> screen. The left sidebar shows all 6 onboarding steps, and the right HUD confirms the car is in <strong>Park</strong> with full battery. The UI uses the <strong>Figure-Ground</strong> principle—frosted glass panels float distinctly above the dark background.</p>
+                <span class="gestalt-tag">Gestalt: Figure-Ground</span>
+            </div>
+        </div>
+
+        <!-- 2. Reaction: Entering the Car -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step1_sketch.png" alt="Alex enters car">
+                <div class="step-badge reaction-badge">Reaction 1.1</div>
+            </div>
+            <div class="caption">
+                <h3>Alex Enters the Vehicle</h3>
+                <p>Alex settles into the driver's seat for the first time. The dashboard greets him with "Hello!" on the central display, instantly <strong>establishing a personal connection</strong> before he touches anything. The car initiates the relationship.</p>
+                <div class="quote">"It already knows I'm here."</div>
+            </div>
+        </div>
+
+        <!-- 3. Reaction: Voice Registration -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/reaction_voice.png" alt="Voice registration">
+                <div class="step-badge reaction-badge">Reaction 1.2</div>
+            </div>
+            <div class="caption">
+                <h3>Voice Profile Capture</h3>
+                <p>Alex speaks naturally while the system captures their <strong>unique vocal signature</strong>. Sound waves visualize on the dashboard, providing real-time feedback. This voice print enables hands-free control for all future interactions.</p>
+                <div class="quote">"Hey AeroDrive, I'm Alex."</div>
+                <span class="gestalt-tag">Gestalt: Common Fate</span>
+            </div>
+        </div>
+
+        <!-- 4. Reaction: Face Scan -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/reaction_facescan.png" alt="Face scan">
+                <div class="step-badge reaction-badge">Reaction 1.3</div>
+            </div>
+            <div class="caption">
+                <h3>Biometric Face Registration</h3>
+                <p>A thin laser line scans across Alex's face. The system maps <strong>facial geometry for driver authentication</strong>—the car will now recognize Alex instantly every time they sit down. No keys, no passwords, just presence.</p>
+                <div class="quote">"Biometric authentication in progress..."</div>
+                <span class="gestalt-tag">Gestalt: Continuity</span>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <div class="section-divider">
+            <h2>Phase 2 — Comfort & Personal Space <span>Steps 2.1 – 2.4</span></h2>
+        </div>
+
+        <!-- 5. Prototype: Comfort Screen -->
+        <div class="panel">
+            <div class="image-area">
+                <img class="prototype" src="screenshots/step2.png" alt="Comfort Config Screen">
+                <div class="step-badge">Screen 2.0</div>
+            </div>
+            <div class="caption">
+                <h3>Comfort Configuration Interface</h3>
+                <p>The interactive seat diagram displays <strong>tappable hotspots</strong> for headrest, backrest, lumbar, and cushion zones. Each zone reveals adjustment controls with +/– buttons. The <strong>Proximity</strong> principle groups related controls together—seat adjustments are visually clustered near the seat diagram.</p>
+                <span class="gestalt-tag">Gestalt: Proximity</span>
+            </div>
+        </div>
+
+        <!-- 6. Reaction: Physical Seat Adjustment -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step2_sketch.png" alt="Hand adjusting seat">
+                <div class="step-badge reaction-badge">Reaction 2.1</div>
+            </div>
+            <div class="caption">
+                <h3>Seat & Steering Calibration</h3>
+                <p>As Alex taps hotspots on the screen, the physical seat responds in real-time—<strong>lumbar inflates, headrest tilts, steering column extends</strong>. This bidirectional feedback between screen and hardware builds immediate physical trust.</p>
+                <div class="quote">"The seat is actually moving as I tap!"</div>
+            </div>
+        </div>
+
+        <!-- 7. Reaction: Ambient Lighting -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/reaction_ambient.png" alt="Ambient lighting">
+                <div class="step-badge reaction-badge">Reaction 2.2</div>
+            </div>
+            <div class="caption">
+                <h3>Ambient Lighting Personalization</h3>
+                <p>Alex picks a soft <strong>purple-blue ambient theme</strong> from the color palette on screen. The entire cabin transforms—door panels, dashboard, and footwells glow in the chosen color. The environment now feels <strong>personally curated</strong>.</p>
+                <div class="quote">"Now it really feels like my car."</div>
+                <span class="gestalt-tag">Gestalt: Similarity</span>
+            </div>
+        </div>
+
+        <!-- 8. Reaction: Climate Control -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step6_context.png" alt="Climate controls">
+                <div class="step-badge reaction-badge">Reaction 2.3</div>
+            </div>
+            <div class="caption">
+                <h3>Auto Climate Calibration</h3>
+                <p>Seat-embedded sensors detect Alex's body temperature and <strong>automatically propose an optimal climate setting</strong> (22°C). Alex can override via voice or touch. The system learns their thermal preferences over time.</p>
+                <div class="quote">"It already knows I run warm."</div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <div class="section-divider">
+            <h2>Phase 3 — Lifestyle Connectivity <span>Steps 3.1 – 3.3</span></h2>
+        </div>
+
+        <!-- 9. Prototype: Location Screen -->
+        <div class="panel">
+            <div class="image-area">
+                <img class="prototype" src="screenshots/step3.png" alt="Location Config Screen">
+                <div class="step-badge">Screen 3.0</div>
+            </div>
+            <div class="caption">
+                <h3>Location Presets Interface</h3>
+                <p>The screen presents address input fields for <strong>Home and Work presets</strong>. Each location is enclosed in its own visual region—a rounded card with a distinct icon. The <strong>Common Region</strong> principle instantly separates Home from Work without labels needing to explain the difference.</p>
+                <span class="gestalt-tag">Gestalt: Common Region</span>
+            </div>
+        </div>
+
+        <!-- 10. Reaction: Setting Home -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step3_sketch.png" alt="Alex setting home">
+                <div class="step-badge reaction-badge">Reaction 3.1</div>
+            </div>
+            <div class="caption">
+                <h3>Home & Work Integration</h3>
+                <p>Alex says "Set Home to 42 Park Avenue" and the car confirms with a map pin animation. By connecting <strong>their daily routine to the vehicle</strong>, the car transitions from a standalone tool into a seamless extension of Alex's life.</p>
+                <div class="quote">"It already knows my commute."</div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <div class="section-divider">
+            <h2>Phase 4 — Drive Education <span>Steps 4.1 – 4.4</span></h2>
+        </div>
+
+        <!-- 11. Prototype: Learn Screen (CAN/CAN'T) -->
+        <div class="panel">
+            <div class="image-area">
+                <img class="prototype" src="screenshots/step4.png" alt="Education Screen">
+                <div class="step-badge">Screen 4.0</div>
+            </div>
+            <div class="caption">
+                <h3>Level 4 Autonomy — CAN / CAN'T</h3>
+                <p>The first education slide presents the car's <strong>autonomy boundaries</strong> in a split CAN / CAN'T grid. Green-bordered items (highway autopilot, city navigation, auto-park, sign reading, overtaking) sit opposite red-bordered limitations (unmapped roads, heavy construction, extreme weather). The <strong>Similarity</strong> principle — matching border color to capability — makes this instantly scannable.</p>
+                <span class="gestalt-tag">Gestalt: Similarity</span>
+            </div>
+        </div>
+
+        <!-- 12. Reaction: Studying Capabilities -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/reaction_safety.png" alt="Alex reading safety">
+                <div class="step-badge reaction-badge">Reaction 4.1</div>
+            </div>
+            <div class="caption">
+                <h3>Absorbing the Boundaries</h3>
+                <p>Alex leans forward, studying the CAN / CAN'T grid carefully. Understanding <strong>exactly where autonomy ends</strong> removes the dangerous "Black Box" assumption that the car can handle everything. Alex now has a clear <strong>mental model</strong> of the AI's limits.</p>
+                <div class="quote">"City roads are fine, but construction zones are mine."</div>
+            </div>
+        </div>
+
+        <!-- 13. Reaction: Safety Sensors -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step4_context.png" alt="Safety sensors">
+                <div class="step-badge reaction-badge">Reaction 4.2</div>
+            </div>
+            <div class="caption">
+                <h3>360° Safety Shield</h3>
+                <p>Slide 2 presents a <strong>rotating sensor ring</strong> showing 12 cameras, LiDAR (200m range), auto emergency braking, pedestrian & cyclist detection, night vision (infrared), and <strong>V2X vehicle-to-everything communication</strong>. Alex sees exactly how the AI "perceives" the world in 360°.</p>
+                <div class="quote">"So it has eyes everywhere. Good."</div>
+                <span class="gestalt-tag">Gestalt: Closure</span>
+            </div>
+        </div>
+
+        <!-- 14. Reaction: Charging & Range Education -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/reaction_ambient.png" alt="Charging education">
+                <div class="step-badge reaction-badge">Reaction 4.3</div>
+            </div>
+            <div class="caption">
+                <h3>Charging & Range Intelligence</h3>
+                <p>Slide 3 shows a <strong>color-gradient charge bar</strong> with stats: 320 mi range and 20 min to 80% fast charging. The car <strong>pre-heats the battery</strong> while navigating to a charger and routes around congested stations. Alex understands energy management won't be an anxiety.</p>
+                <div class="quote">"Twenty minutes? That's barely a coffee break."</div>
+            </div>
+        </div>
+
+        <!-- 15. Reaction: Take-Over Education — Triggers -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step5_context.png" alt="Take-over triggers">
+                <div class="step-badge reaction-badge">Reaction 4.4</div>
+            </div>
+            <div class="caption">
+                <h3>Take-Over: Trigger Scenarios</h3>
+                <p>The <strong>most critical slide</strong> (tagged ⚠ CRITICAL). A vertical timeline explains when take-over is needed: <strong>unmapped zones, heavy construction, sensor blockage, extreme weather, or system faults</strong>. Alex studies each scenario, building a mental catalog of situations.</p>
+                <div class="quote">"These are specific. I can prepare for each one."</div>
+                <span class="gestalt-tag">Gestalt: Continuity</span>
+            </div>
+        </div>
+
+        <!-- 16. Reaction: Take-Over Education — Warning & Action -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step5_context.png" alt="Take-over warning details">
+                <div class="step-badge reaction-badge">Reaction 4.5</div>
+            </div>
+            <div class="caption">
+                <h3>Take-Over: Warning & Your Action</h3>
+                <p>Timeline step 2: The steering wheel glows <strong>RED</strong>, a chime sounds, a HUD countdown starts, and <strong>seat bolsters tighten</strong> for physical alerting. Step 3: <strong>Grip firmly with both hands</strong>. The system confirms handoff with a <strong>green pulse</strong>. Multi-modal: visual + audio + haptic.</p>
+                <div class="quote">"10 seconds. Visual, audio, AND haptic. Can't miss it."</div>
+            </div>
+        </div>
+
+        <!-- 17. Reaction: Take-Over Education — Failsafe -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/reaction_safety.png" alt="Failsafe education">
+                <div class="step-badge reaction-badge">Reaction 4.6</div>
+            </div>
+            <div class="caption">
+                <h3>Take-Over: Failsafe Protocol</h3>
+                <p>If the driver doesn't respond, a <strong>4-step failsafe engages</strong>: (1) Hazard lights activate. (2) Gradual deceleration. (3) Signal and move to road shoulder. (4) Full stop, doors unlock, <strong>emergency services contacted automatically</strong>. The car will never leave the driver stranded.</p>
+                <div class="quote">"Even if I freeze, the car has my back."</div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <div class="section-divider">
+            <h2>Phase 5 — Take-Over Simulation <span>Practice Makes Permanent</span></h2>
+        </div>
+
+        <!-- 18. Prototype: Simulation Screen -->
+        <div class="panel">
+            <div class="image-area">
+                <img class="prototype" src="screenshots/step5.png" alt="Simulation Screen">
+                <div class="step-badge">Screen 5.0</div>
+            </div>
+            <div class="caption">
+                <h3>Take-Over Drill Interface</h3>
+                <p>A clear title — <strong>"Take-Over Drill"</strong> — and subtitle reassure Alex this is a safe, stationary simulation. A road animation plays inside the screen area. The <strong>attempt counter</strong> at the bottom tracks practice rounds, encouraging mastery through repetition.</p>
+                <span class="gestalt-tag">Gestalt: Figure-Ground</span>
+            </div>
+        </div>
+
+        <!-- 19. Reaction: Autonomous Cruising -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step4_context.png" alt="Autonomous cruising">
+                <div class="step-badge reaction-badge">Reaction 5.1</div>
+            </div>
+            <div class="caption">
+                <h3>Stage 1: Autonomous Cruising</h3>
+                <p>The simulation begins. Road lines animate smoothly, the HUD reads <strong>65 MPH / AUTONOMOUS</strong>. Alex sits calmly, observing the car's behavior. The system narrates: "You are driving autonomously at 65 miles per hour. Watch what happens next." <strong>3 seconds of calm before the storm.</strong></p>
+                <div class="quote">"Smooth so far..."</div>
+            </div>
+        </div>
+
+        <!-- 20. Reaction: Alert Fires -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step5_context.png" alt="Alert fires">
+                <div class="step-badge reaction-badge">Reaction 5.2</div>
+            </div>
+            <div class="caption">
+                <h3>Stage 2: UNMAPPED ZONE — TAKE CONTROL</h3>
+                <p>The screen flashes. The steering wheel icon <strong>pulses red</strong>. A <strong>10-second countdown ring</strong> appears. The HUD alert broadcasts "⚠ TAKE OVER." The road animation changes to a <strong>warning-flash pattern</strong>. Alex's adrenaline spikes — the multi-modal alert demands immediate action.</p>
+                <div class="quote">"ALERT: Unmapped zone — 10 seconds!"</div>
+            </div>
+        </div>
+
+        <!-- 21. Reaction: Grip the Wheel -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step5_context.png" alt="Grip wheel">
+                <div class="step-badge reaction-badge">Reaction 5.3</div>
+            </div>
+            <div class="caption">
+                <h3>Stage 2b: GRIP STEERING WHEEL</h3>
+                <p>A <strong>red hold-to-confirm button</strong> appears below the simulation: "PRESS AND HOLD to take control." As Alex holds the button, a <strong>fill progress bar</strong> animates from left to right. If released early, progress resets — this simulates the physical commitment of gripping a real steering wheel firmly.</p>
+                <div class="quote">"Hold it... hold it... don't let go..."</div>
+            </div>
+        </div>
+
+        <!-- 22. Reaction: Control Secured -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/reaction_relief.png" alt="Control secured">
+                <div class="step-badge reaction-badge">Reaction 5.4</div>
+            </div>
+            <div class="caption">
+                <h3>Stage 3: CONTROL SECURED ✓</h3>
+                <p>The button turns <strong>green — "CONTROL SECURED."</strong> The simulation shows a green checkmark with Alex's <strong>exact response time</strong> (e.g., "You responded in 3.2 seconds"). The HUD confirms "Override Successful." Alex exhales. <strong>Muscle memory has been trained</strong> in a zero-risk environment.</p>
+                <div class="quote">"3.2 seconds. I've got this."</div>
+            </div>
+        </div>
+
+        <!-- 23. Reaction: Failsafe Demo (Timeout) -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/reaction_relief.png" alt="Failsafe demo">
+                <div class="step-badge reaction-badge">Reaction 5.5</div>
+            </div>
+            <div class="caption">
+                <h3>Failsafe: What If Time Runs Out?</h3>
+                <p>If 10 seconds expire, the simulation shows a <strong>dedicated failsafe screen</strong>: "Time Expired — Failsafe Activated." The voice explains the full 4-step emergency protocol. The drill <strong>automatically restarts</strong> for another attempt, reinforcing that practice is expected — not optional.</p>
+                <div class="quote">"It didn't just fail silently. It showed me exactly what would happen."</div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <div class="section-divider">
+            <h2>Phase 6 — AI Personality Tuning <span>Steps 5.1 – 5.3</span></h2>
+        </div>
+
+        <!-- 18. Prototype: Tuning Screen -->
+        <div class="panel">
+            <div class="image-area">
+                <img class="prototype" src="screenshots/step6.png" alt="Tuning Screen">
+                <div class="step-badge">Screen 6.0</div>
+            </div>
+            <div class="caption">
+                <h3>Driving Style Tuning Interface</h3>
+                <p>A real-time <strong>road preview animates</strong> on the left showing car position, following distance, and lane placement. On the right, cards for acceleration style, lane preference, and following distance use the <strong>Proximity</strong> principle to group related options.</p>
+                <span class="gestalt-tag">Gestalt: Proximity</span>
+            </div>
+        </div>
+
+        <!-- 19. Reaction: Selecting Dynamic -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step6_context.png" alt="Tapping Dynamic mode">
+                <div class="step-badge reaction-badge">Reaction 6.1</div>
+            </div>
+            <div class="caption">
+                <h3>Selecting 'Dynamic' Mode</h3>
+                <p>Alex's finger taps the <strong>"Dynamic" acceleration card</strong>. The road preview instantly updates—the car icon moves faster, the simulated speedometer rises. The system uses <strong>Common Fate</strong>—all elements tied to the speed setting animate together.</p>
+                <div class="quote">"Dynamic mode. Let's keep it sporty."</div>
+                <span class="gestalt-tag">Gestalt: Common Fate</span>
+            </div>
+        </div>
+
+        <!-- 20. Reaction: Bolsters Tighten -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step6_bolsters.png" alt="Seat bolsters tightening">
+                <div class="step-badge reaction-badge">Reaction 6.2</div>
+            </div>
+            <div class="caption">
+                <h3>Haptic Calibration — Bolsters</h3>
+                <p>As 'Dynamic' is confirmed, the car's <strong>pneumatic seat bolsters instantly inflate</strong>, physically hugging Alex's torso. This haptic confirmation lets the user feel the car's readiness for performance driving—a <strong>multi-sensory trust bridge</strong> between software and body.</p>
+                <div class="quote">"Whoa! It's like the car is giving me a secure hug."</div>
+            </div>
+        </div>
+
+        <!-- 21. Reaction: Speed Tilt -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step6_tilt.png" alt="Seat tilting back">
+                <div class="step-badge reaction-badge">Reaction 6.3</div>
+            </div>
+            <div class="caption">
+                <h3>Speed Simulation — G-Force Tilt</h3>
+                <p>The seat tilts back as the dashboard simulates a high-speed sprint with <strong>heavy motion blur through the windows</strong>. The combination of vestibular tilt and visual motion blur helps Alex's brain <strong>calibrate to the AI's acceleration curve</strong>—all while safely parked.</p>
+                <div class="quote">"I can actually feel the speed! This is incredible."</div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <div class="section-divider">
+            <h2>Phase 7 — Onboarding Complete <span>Calibration Finalized</span></h2>
+        </div>
+
+        <!-- 22. Prototype: Success Screen -->
+        <div class="panel">
+            <div class="image-area">
+                <img class="prototype" src="screenshots/step7.png" alt="Success Screen">
+                <div class="step-badge">Screen 7.0</div>
+            </div>
+            <div class="caption">
+                <h3>Calibration Complete</h3>
+                <p>A green checkmark confirms all settings are saved. The progress bar reads 100%. The HUD transitions from "CALIBRATING" to <strong>"READY"</strong>. The <strong>Closure</strong> principle gives the user a sense of completeness—every step has been fulfilled.</p>
+                <span class="gestalt-tag">Gestalt: Closure</span>
+            </div>
+        </div>
+
+        <!-- 23. Reaction: Partnership Begins -->
+        <div class="panel reaction">
+            <div class="image-area">
+                <img src="screenshots/step7_context.png" alt="Alex confident">
+                <div class="step-badge reaction-badge">Reaction 7.1</div>
+            </div>
+            <div class="caption">
+                <h3>The Partnership Begins</h3>
+                <p>Alex leans back, relaxed and confident. Through identity, comfort, education, practice, and calibration, the machine has become a <strong>trusted co-pilot</strong>. The onboarding transformed uncertainty into partnership.</p>
+                <div class="quote">"We're ready for the road."</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        AeroDrive Onboarding Storyboard — 29 Panels — UIUDP Course Submission
+    </div>
+</body>
+</html>

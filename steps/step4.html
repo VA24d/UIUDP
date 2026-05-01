@@ -15,7 +15,7 @@
         </div>
         <div class="can-cant">
             <div class="can-col">
-                <div class="col-label"><i class="ph-fill ph-check-circle" style="color:#00ff88;"></i> CAN</div>
+                <div class="col-label"><i class="ph-fill ph-check-circle" style="color:var(--success);"></i> CAN</div>
                 <ul>
                     <li>Highway autopilot at any speed</li>
                     <li>City navigation on mapped roads</li>
@@ -25,11 +25,12 @@
                 </ul>
             </div>
             <div class="cant-col">
-                <div class="col-label"><i class="ph-fill ph-x-circle" style="color:#ff3366;"></i> CAN'T</div>
+                <div class="col-label"><i class="ph-fill ph-x-circle" style="color:var(--danger);"></i> CAN'T</div>
                 <ul>
                     <li>Drive on unmapped roads</li>
                     <li>Navigate heavy construction</li>
                     <li>Operate in extreme weather</li>
+                    <li>Handle unmarked dirt roads</li>
                 </ul>
             </div>
         </div>
@@ -58,10 +59,11 @@
                 <div class="car-silhouette"><i class="ph-fill ph-car-profile"></i></div>
             </div>
             <div class="safety-features">
-                <div class="sf"><i class="ph ph-scan"></i> LIDAR mapping</div>
+                <div class="sf"><i class="ph ph-scan"></i> LIDAR mapping (200m range)</div>
                 <div class="sf"><i class="ph ph-hand-palm"></i> Auto emergency braking</div>
-                <div class="sf"><i class="ph ph-person"></i> Pedestrian detection</div>
-                <div class="sf"><i class="ph ph-moon"></i> Night vision</div>
+                <div class="sf"><i class="ph ph-person"></i> Pedestrian & cyclist detection</div>
+                <div class="sf"><i class="ph ph-moon"></i> Night vision (infrared)</div>
+                <div class="sf"><i class="ph ph-cell-signal-full"></i> V2X communication</div>
             </div>
         </div>
     </div>
@@ -88,11 +90,11 @@
                 <div class="cstat"><span class="cnum">320</span><span class="cunit">mi range</span></div>
                 <div class="cstat highlight"><span class="cnum">20</span><span class="cunit">min → 80%</span></div>
             </div>
-            <p class="charge-note">The car pre-heats the battery while navigating to a charger for optimal speed.</p>
+            <p class="charge-note">The car pre-heats the battery while navigating to a charger for optimal speed. It will also route around charger congestion.</p>
         </div>
     </div>
 
-    <!-- Slide 4: TAKE-OVER (Critical) -->
+    <!-- Slide 4: TAKE-OVER (Critical) — Enhanced -->
     <div class="learn-slide" id="ls-4">
         <div class="slide-header">
             <div class="slide-icon red"><i class="ph ph-warning-circle"></i></div>
@@ -105,16 +107,16 @@
             <div class="tl-step" id="tl-1">
                 <div class="tl-marker">1</div>
                 <div class="tl-body">
-                    <h4>Trigger</h4>
-                    <p>Unmapped zone, heavy construction, sensor blockage, or extreme weather ahead.</p>
+                    <h4>Trigger Scenarios</h4>
+                    <p>Unmapped zone, heavy construction, sensor blockage, extreme weather, or system fault detected ahead.</p>
                 </div>
             </div>
             <div class="tl-connector"></div>
             <div class="tl-step" id="tl-2">
                 <div class="tl-marker">2</div>
                 <div class="tl-body">
-                    <h4>Warning — 10 seconds</h4>
-                    <p>The steering wheel glows <span class="red-text">RED</span>. A chime sounds. A countdown appears on the HUD.</p>
+                    <h4>Multi-Modal Warning — 10 seconds</h4>
+                    <p>The steering wheel glows <span class="red-text">RED</span>. A chime sounds. A countdown appears on the HUD. <strong>Seat bolsters tighten</strong> to alert you physically.</p>
                     <div class="tl-preview">
                         <div class="wheel-icon pulsing"><i class="ph-fill ph-steering-wheel"></i></div>
                         <div class="countdown-preview">10s</div>
@@ -126,15 +128,18 @@
                 <div class="tl-marker">3</div>
                 <div class="tl-body">
                     <h4>Your Action</h4>
-                    <p><strong>Grip the steering wheel firmly</strong> with both hands. The system confirms handoff with a <span class="green-text">green pulse</span>.</p>
+                    <p><strong>Grip the steering wheel firmly</strong> with both hands. The system confirms handoff with a <span class="green-text">green pulse</span>. You are now in full manual control.</p>
                 </div>
             </div>
             <div class="tl-connector"></div>
             <div class="tl-step warning-step" id="tl-4">
                 <div class="tl-marker">!</div>
                 <div class="tl-body">
-                    <h4>If You Don't Respond</h4>
-                    <p>Hazard lights activate → gentle deceleration → signal → safe stop on the road shoulder.</p>
+                    <h4>If You Don't Respond (Failsafe)</h4>
+                    <p><span class="red-text">Step 1:</span> Hazard lights activate automatically.<br>
+                       <span class="red-text">Step 2:</span> Gradual deceleration begins.<br>
+                       <span class="red-text">Step 3:</span> Car signals and moves to road shoulder.<br>
+                       <span class="red-text">Step 4:</span> Full stop. Doors unlock. Emergency services contacted.</p>
                 </div>
             </div>
         </div>

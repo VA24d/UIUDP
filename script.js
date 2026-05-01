@@ -527,12 +527,24 @@ function updateSlideUI() {
 let simCountdown = 10;
 let simCountdownTimer = null;
 let simStartTime = 0;
+let simAttempt = 1;
 
 function initSimulation() {
     const btnNext = document.getElementById('btn-next-5');
     const btnHold = document.getElementById('btn-hold');
     const fill = document.getElementById('hold-fill');
     let holdTimer, progress = 0;
+
+    // Update attempt counter
+    const counter = document.getElementById('attempt-counter');
+    if (counter) counter.textContent = 'ATTEMPT ' + simAttempt;
+
+    // Reset hold button state
+    if (btnHold) {
+        btnHold.classList.remove('secured', 'holding');
+        btnHold.querySelector('span').innerHTML = '<i class="ph ph-hand-grabbing" style="margin-right:6px;"></i> GRIP STEERING WHEEL';
+    }
+    if (fill) fill.style.width = '0%';
 
     // Stage 1: Autonomous driving (3 seconds)
     speak("You are now driving autonomously at 65 miles per hour. Watch what happens next.");
@@ -553,6 +565,10 @@ function initSimulation() {
         const circle = document.getElementById('countdown-circle');
         const numEl = document.getElementById('countdown-num');
         
+        // Reset countdown visual
+        if (circle) circle.style.strokeDashoffset = 0;
+        if (numEl) { numEl.textContent = '10'; numEl.style.fontSize = ''; numEl.style.color = ''; }
+        
         simCountdownTimer = setInterval(() => {
             simCountdown--;
             if (numEl) numEl.textContent = simCountdown;
@@ -566,9 +582,15 @@ function initSimulation() {
             }
             if (simCountdown <= 0) {
                 clearInterval(simCountdownTimer);
-                speak("Time's up. In a real scenario, the car would now safely park itself. Let's try again.");
-                // Reset simulation
-                setTimeout(() => resetSimulation(), 3000);
+                // Show failsafe stage instead of silently resetting
+                document.getElementById('sim-stage-2').classList.remove('active');
+                const failsafe = document.getElementById('sim-stage-4');
+                if (failsafe) failsafe.classList.add('active');
+                document.getElementById('sim-action').classList.add('hidden');
+                showHudAlert('Failsafe Engaged', '#FBBF24');
+                speak("Time expired. The car's failsafe system would engage: hazard lights on, gradual deceleration, and a safe stop on the shoulder. Let's practice again.");
+                // Reset simulation after showing failsafe
+                setTimeout(() => resetSimulation(), 4000);
             }
         }, 1000);
     }, 3000);
@@ -598,7 +620,7 @@ function initSimulation() {
                         document.getElementById('sim-action').classList.add('hidden');
                         document.getElementById('response-time').textContent = responseTime;
                         if (btnNext) btnNext.disabled = false;
-                        showHudAlert('Override Successful', '#00ff88');
+                        showHudAlert('Override Successful', '#10B981');
                         speak(`Excellent! You took over in ${responseTime} seconds. You're ready for the road.`);
                     }, 500);
                 }
@@ -621,9 +643,11 @@ function initSimulation() {
 }
 
 function resetSimulation() {
-    document.getElementById('sim-stage-2').classList.remove('active');
+    // Hide all stages
+    document.querySelectorAll('.sim-stage').forEach(s => s.classList.remove('active'));
     document.getElementById('sim-stage-1').classList.add('active');
     document.getElementById('sim-action').classList.add('hidden');
+    simAttempt++;
     // Restart after a beat
     setTimeout(() => initSimulation(), 1500);
 }
