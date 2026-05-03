@@ -1,89 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autonomous UI/UX Prototype</title>
+    <title>AeroDrive — Autonomous Driving Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
+
 <body>
-    <div id="ambient-overlay"></div>
+    <!-- Full-screen strobe layer (pointer-events: none in CSS) -->
+    <div id="ambient-overlay" aria-hidden="true"></div>
+    <!-- Side-by-Side Cockpit Layout -->
+    <div class="cockpit-layout">
 
-    <!-- Meta Control Navbar -->
-    <nav id="meta-nav">
-        <div class="nav-brand">System Simulator [God-View] <span id="mic-status">🎙️ Mic Offline</span></div>
-        <div class="scenario-controls">
-            <button onclick="SystemLogic.triggerScenario('takeover')">1. Takeover</button>
-            <button onclick="SystemLogic.triggerScenario('fatigue')">2. Fatigue</button>
-            <button onclick="SystemLogic.triggerScenario('battery')">3. Battery</button>
-            <button onclick="SystemLogic.resetSystem()" class="reset-btn">Reset</button>
-        </div>
-    </nav>
-
-    <main id="cockpit">
-        <!-- Tablet Infotainment -->
-        <section id="tablet" class="screen">
-            <!-- Procedural CSS Dark Map -->
-            <div id="map-background"></div>
-            
-            <!-- Voice UI -->
-            <div id="voice-ui" class="hidden">
-                <div class="waveform">
-                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        <!-- Central Display (Main Infotainment) -->
+        <div id="central-display" class="central-display">
+            <aside class="sidebar">
+                <div class="logo">
+                    <div class="logo-icon"><i class="ph-fill ph-steering-wheel"></i></div>
+                    <span>AeroDrive</span>
                 </div>
-                <p id="voice-text">"Aditya, listening..."</p>
-            </div>
+                <ul class="nav-steps">
+                    <li id="nav-scenario-1">
+                        <div class="nav-icon"><i class="ph-fill ph-warning-circle"></i></div>
+                        <span>Take-Over</span>
+                    </li>
+                    <li id="nav-scenario-2">
+                        <div class="nav-icon"><i class="ph-fill ph-eye-closed"></i></div>
+                        <span>Fatigue</span>
+                    </li>
+                    <li id="nav-scenario-3">
+                        <div class="nav-icon"><i class="ph-fill ph-battery-warning"></i></div>
+                        <span>Battery</span>
+                    </li>
+                    <li id="nav-scenario-4">
+                        <div class="nav-icon"><i class="ph-fill ph-compass"></i></div>
+                        <span>Touring</span>
+                    </li>
+                    <li id="nav-scenario-5">
+                        <div class="nav-icon"><i class="ph-fill ph-cloud-rain"></i></div>
+                        <span>Weather</span>
+                    </li>
+                </ul>
+            </aside>
 
-            <!-- Animated Modal Container -->
-            <div id="tablet-modal" class="hidden">
-                <h2 id="modal-title">TITLE</h2>
-                <p id="modal-reason">Reasoning</p>
-                <div id="modal-timer" class="hidden">8</div>
-                <div id="modal-actions"></div>
-            </div>
-        </section>
+            <main class="content-area">
+                <div id="module-container" class="module-container">
+                    <!-- Procedural CSS Dark Map -->
+                    <div id="map-background"></div>
 
-        <!-- Steering Column Proxy -->
-        <div id="steering-column">
-            <div id="steering-wheel">
-                <svg viewBox="0 0 100 100" class="wheel-svg">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#444" stroke-width="10"/>
-                    <path d="M 10 50 L 90 50 M 50 50 L 50 95" stroke="#444" stroke-width="8"/>
-                </svg>
-                <button id="squeeze-btn" class="hidden" onclick="SystemLogic.handleUserGrip()">SQUEEZE TO GRIP</button>
+                    <!-- Weather reroute map (scenario overlay) -->
+                    <div id="weather-route-layer" class="weather-route-layer hidden" aria-hidden="true">
+                        <div class="weather-map-card">
+                            <div class="weather-map-header">
+                                <span class="weather-map-title">Navigation</span>
+                                <span class="weather-live-badge"><i class="ph-fill ph-broadcast"></i> Live weather mesh</span>
+                            </div>
+                            <svg class="weather-route-svg" viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg"
+                                aria-label="Route map with weather cell">
+                                <defs>
+                                    <linearGradient id="weather-storm-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="rgba(56,107,214,0.45)" />
+                                        <stop offset="55%" stop-color="rgba(30,58,138,0.65)" />
+                                        <stop offset="100%" stop-color="rgba(15,23,42,0.75)" />
+                                    </linearGradient>
+                                    <filter id="weather-soft-glow" x="-40%" y="-40%" width="180%" height="180%">
+                                        <feGaussianBlur stdDeviation="8" result="b" />
+                                        <feMerge>
+                                            <feMergeNode in="b" />
+                                            <feMergeNode in="SourceGraphic" />
+                                        </feMerge>
+                                    </filter>
+                                    <linearGradient id="road-sheen" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#272c38" />
+                                        <stop offset="100%" stop-color="#171a22" />
+                                    </linearGradient>
+                                </defs>
+                                <!-- schematic blocks -->
+                                <rect width="340" height="210" fill="#080a10" rx="12" />
+                                <g class="parcel-grid" opacity="0.35" stroke="#1f232b" stroke-width="0.5">
+                                    <path d="M0 140 H340 M0 80 H340 M120 0 V210 M210 0 V210 M65 0 V210 M285 0 V210" fill="none" />
+                                </g>
+                                <!-- main road -->
+                                <path d="M20 178 L322 178" stroke="#2a3344" stroke-width="14" stroke-linecap="round" />
+                                <path d="M55 178 L175 178 L228 118 L298 118" stroke="url(#road-sheen)" stroke-width="6"
+                                    fill="none" stroke-linejoin="round" />
+                                <!-- elevation / secondary -->
+                                <path d="M40 118 L298 118" stroke="#243041" stroke-width="4" stroke-dasharray="4 10" />
+
+                                <!-- weather cell -->
+                                <g filter="url(#weather-soft-glow)">
+                                    <ellipse cx="170" cy="102" rx="72" ry="48" fill="url(#weather-storm-grad)" opacity="0.88" />
+                                </g>
+                                <ellipse class="weather-pulse-ring" cx="170" cy="102" rx="58" ry="38" fill="none"
+                                    stroke="rgba(56,189,248,0.35)" stroke-width="2" />
+
+                                <!-- planned route through storm -->
+                                <path id="weather-path-planned"
+                                    d="M 48 174 C 105 174, 132 148, 155 120 C 168 103, 188 112, 210 118 C 246 132, 270 118, 300 118"
+                                    fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"
+                                    stroke-dasharray="8 6" />
+
+                                <!-- safer detour -->
+                                <path id="weather-path-detour"
+                                    d="M 48 174 C 78 174, 88 146, 100 132 C 128 108, 150 148, 186 154 C 226 156, 250 134, 300 118"
+                                    fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" opacity="0.95"
+                                    stroke-linejoin="round" />
+
+                                <!-- vehicle puck -->
+                                <g id="weather-vehicle" transform="translate(48,174)">
+                                    <circle r="10" fill="#0ea5e9" stroke="#e0f2fe" stroke-width="2" />
+                                    <circle r="4" fill="#082f49" />
+                                </g>
+                                <!-- landmarks -->
+                                <text x="18" y="28" fill="#475569" font-size="11" font-family="Inter, sans-serif">
+                                    Depart</text>
+                                <text x="268" y="38" fill="#475569" font-size="11" font-family="Inter, sans-serif"
+                                    text-anchor="end">
+                                    ETA</text>
+                            </svg>
+                            <div class="weather-cell-precip" aria-hidden="true"></div>
+
+                            <div class="weather-map-footer">
+                                <div class="route-legend">
+                                    <span class="legend-chip planned"><span class="swatch"></span> Planned</span>
+                                    <span class="legend-chip detour"><span class="swatch"></span> Safer reroute (+4&nbsp;min)</span>
+                                </div>
+                                <p class="weather-map-note" id="weather-map-caption">Heavy rain on segment A4 — traction
+                                    limit reduced ahead.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Battery reroute preview map -->
+                    <div id="battery-route-layer" class="battery-route-layer hidden" aria-hidden="true">
+                        <div class="battery-map-card">
+                            <div class="weather-map-header">
+                                <span class="weather-map-title">Energy & route</span>
+                                <span class="battery-live-badge"><i class="ph-fill ph-lightning"></i> Range predictor</span>
+                            </div>
+                            <svg class="battery-route-svg" viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg"
+                                aria-label="Battery range and charger reroute preview">
+                                <defs>
+                                    <linearGradient id="battery-gap-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="rgba(234,179,8,0.08)" />
+                                        <stop offset="100%" stop-color="rgba(220,38,38,0.12)" />
+                                    </linearGradient>
+                                    <linearGradient id="battery-road-sheen" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#272c38" />
+                                        <stop offset="100%" stop-color="#171a22" />
+                                    </linearGradient>
+                                </defs>
+                                <rect width="340" height="210" fill="#080a10" rx="12" />
+                                <g opacity="0.35" stroke="#1f232b" stroke-width="0.5" fill="none">
+                                    <path d="M0 140 H340 M0 80 H340 M120 0 V210 M210 0 V210" />
+                                </g>
+                                <!-- highway -->
+                                <path d="M24 174 L318 174" stroke="#2a3344" stroke-width="12" stroke-linecap="round" />
+                                <path d="M40 174 L284 174" stroke="url(#battery-road-sheen)" stroke-width="5"
+                                    stroke-linecap="round" />
+                                <!-- range shortfall shaded zone -->
+                                <ellipse cx="248" cy="174" rx="52" ry="22" fill="url(#battery-gap-grad)"
+                                    opacity="0.92" />
+
+                                <!-- current plan — cannot reach -->
+                                <path id="battery-path-planned"
+                                    d="M 52 174 L 188 174 L 220 174 L 255 174"
+                                    fill="none" stroke="#eab308" stroke-width="3.5" stroke-dasharray="7 6"
+                                    stroke-linecap="round" />
+                                <circle cx="255" cy="174" r="16" stroke="rgba(239,68,68,0.5)" stroke-width="2"
+                                    fill="none" stroke-dasharray="3 5" />
+
+                                <!-- suggested route to charger -->
+                                <path id="battery-path-station"
+                                    d="M 52 174 C 118 174, 138 154, 168 148 C 212 146, 234 172, 262 174 C 274 174, 289 154, 304 148"
+                                    fill="none" stroke="#22c55e" stroke-width="3.8" stroke-linecap="round"
+                                    opacity="0.95" />
+
+                                <!-- vehicle -->
+                                <g transform="translate(52,174)">
+                                    <circle r="10" fill="#eab308" stroke="#fef9c3" stroke-width="2" />
+                                    <circle r="3.5" fill="#422006" />
+                                </g>
+                                <!-- destination X -->
+                                <text x="270" y="162" fill="#fca5a5" font-size="18" font-weight="700">×</text>
+                                <!-- charger -->
+                                <g transform="translate(304,148)">
+                                    <circle r="18" fill="rgba(34,197,94,0.15)" stroke="#22c55e" stroke-width="2" />
+                                    <path fill="#22c55e"
+                                        d="M-2 -9 L8 3 L3 3 L7 13 L-8 -3 L2 -3 Z" />
+                                </g>
+                                <text x="16" y="30" fill="#475569" font-size="11" font-family="Inter, sans-serif">You</text>
+                                <text x="248" y="150" fill="#eab308" font-size="10" font-family="Inter, sans-serif"
+                                    text-anchor="middle">GAP</text>
+                                <text x="300" y="128" fill="#86efac" font-size="10" font-family="Inter, sans-serif"
+                                    text-anchor="end">
+                                    Charger +5&nbsp;min</text>
+                            </svg>
+                            <div class="weather-map-footer">
+                                <div class="route-legend">
+                                    <span class="legend-chip battery-short"><span class="swatch"></span> Planned —
+                                        short&nbsp;fall</span>
+                                    <span class="legend-chip battery-reroute"><span class="swatch"></span> Reroute to
+                                        charger</span>
+                                </div>
+                                <p class="weather-map-note" id="battery-map-caption">Reserve math: highway ETA exceeds
+                                    remaining electrons to destination.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Voice UI Indicator -->
+                    <div id="voice-ui" class="voice-indicator hidden">
+                        <i class="ph-fill ph-microphone"></i>
+                        <div class="voice-info">
+                            <span class="voice-label">Listening</span>
+                            <div class="waveform">
+                                <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                                <span class="bar"></span><span class="bar"></span>
+                            </div>
+                        </div>
+                        <p id="voice-text" class="voice-transcript"></p>
+                    </div>
+
+                    <!-- Animated Modal Container -->
+                    <div id="tablet-modal" class="modal-overlay hidden">
+                        <div class="modal-content">
+                            <div class="modal-icon" id="modal-icon">
+                                <i class="ph-fill ph-warning-circle"></i>
+                            </div>
+                            <h2 id="modal-title">TITLE</h2>
+                            <p id="modal-reason">Reasoning</p>
+                            <div id="modal-timer" class="countdown-display hidden">
+                                <span class="countdown-value">8</span>
+                                <span class="countdown-label">seconds</span>
+                            </div>
+                            <div id="modal-actions" class="modal-actions"></div>
+                        </div>
+                    </div>
+
+                    <!-- Same hold-to-take-over control as onboarding (steps/step5.html); nav label matches root index.html "Take-Over" -->
+                    <div class="takeover-hold-action hidden" id="takeover-hold-action" aria-live="polite">
+                        <p class="takeover-hold-instruction">PRESS AND HOLD to take control of the vehicle</p>
+                        <button type="button" id="takeover-hold-btn" class="hold-btn">
+                            <div class="hold-fill" id="takeover-hold-fill"></div>
+                            <span class="hold-btn-label"><i class="ph ph-hand-grabbing"></i> GRIP STEERING WHEEL</span>
+                        </button>
+                    </div>
+
+                    <!-- Steering Wheel (centered in content area) -->
+                    <div id="steering-column">
+                        <div id="steering-wheel">
+                            <svg viewBox="0 0 100 100" class="wheel-svg">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="#444" stroke-width="10" />
+                                <path d="M 10 50 L 90 50 M 50 50 L 50 95" stroke="#444" stroke-width="8" />
+                            </svg>
+                            <button id="squeeze-btn" class="squeeze-button hidden"
+                                onclick="SystemLogic.handleUserGrip()">
+                                <i class="ph-fill ph-hand-grabbing"></i>
+                                <span>SQUEEZE</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Voice Activity Bar -->
+            <div class="voice-bar" id="voice-bar">
+                <button class="mic-toggle" id="mic-toggle" onclick="VoiceEngine.toggleMic()">
+                    <i class="ph-fill ph-microphone"></i>
+                </button>
+                <i class="ph-fill ph-speaker-high" id="speaker-icon"></i>
+                <div class="voice-info">
+                    <span class="voice-text" id="voice-text-bar">Mic off — tap to listen</span>
+                    <span class="voice-heard" id="voice-heard"></span>
+                </div>
             </div>
         </div>
 
-        <!-- Dashboard HUD -->
-        <section id="dashboard" class="screen">
+        <!-- Driver Dashboard (Instrument Cluster) -->
+        <div id="hud" class="hud-container">
             <div class="hud-top">
-                <span id="hud-status" class="status-badge sys-active">AUTONOMOUS</span>
-            </div>
-            
-            <div class="dials-container">
-                <div class="speed-dial">
-                    <!-- Dynamic SVG Speedometer -->
-                    <svg viewBox="0 0 120 70" class="speed-svg">
-                        <path d="M 10 60 A 50 50 0 0 1 110 60" fill="none" stroke="#222" stroke-width="8" stroke-linecap="round"/>
-                        <path id="speed-arc" d="M 10 60 A 50 50 0 0 1 110 60" fill="none" stroke="var(--sys-active)" stroke-width="8" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="60"/>
-                    </svg>
-                    <div class="dial-value" id="speed-val">65</div>
-                    <div class="dial-label">KM/H</div>
+                <div class="gear-indicator">
+                    <span class="gear active">P</span>
+                    <span class="gear">R</span>
+                    <span class="gear">N</span>
+                    <span class="gear">D</span>
+                </div>
+                <div class="system-status text-green" id="hud-status">
+                    <i class="ph-fill ph-check-circle"></i> <span id="hud-status-text">Calibrated</span>
                 </div>
             </div>
 
-            <div id="hud-alert" class="hidden">
-                <h3 id="hud-alert-text">EYES ON ROAD</h3>
+            <!-- Dynamic scenario context -->
+            <div class="hud-context" id="hud-context">
+                <span class="hud-context-label" id="hud-context-label">AUTONOMOUS MODE</span>
+                <div class="hud-progress">
+                    <div class="hud-progress-fill" id="hud-progress-fill" style="width: 100%"></div>
+                </div>
             </div>
-        </section>
 
-        <!-- Hardware Log -->
-        <aside id="hardware-log">
-            <h3>Physical Log</h3>
-            <ul id="log-list"><li class="log-item default">> System Booted</li></ul>
-        </aside>
-    </main>
+            <div class="hud-center">
+                <div class="speed-display">
+                    <div class="speed-icon"><i class="ph-fill ph-gauge"></i></div>
+                    <h2 id="speed-val">65</h2>
+                    <small>km/h</small>
+                </div>
+
+                <!-- Alert Overlay -->
+                <div id="hud-alert" class="hud-alert hidden">
+                    <i class="ph-fill ph-warning-circle"></i>
+                    <h2 id="hud-alert-text">EYES ON ROAD</h2>
+                </div>
+            </div>
+
+            <div class="hud-bottom">
+                <div class="hud-metric">
+                    <label>Drive Profile</label>
+                    <div class="bar-container">
+                        <div id="hud-accel-bar" class="bar" style="width: 50%;"></div>
+                    </div>
+                </div>
+                <div class="hud-metric">
+                    <label>Safety Margin</label>
+                    <div class="dots" id="hud-dist-dots">
+                        <div class="dot active"></div>
+                        <div class="dot active"></div>
+                        <div class="dot active"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cockpit Annotation Layer -->
+        <div class="cockpit-annotation" id="cockpit-annotation">
+            Select a scenario from the sidebar to begin simulation...
+        </div>
+
+    </div>
 
     <script src="app.js"></script>
 </body>
+
 </html>

@@ -1,31 +1,516 @@
 <h2 class="title">Location Presets</h2>
-<p class="subtitle">Set your frequent destinations for autonomous routing.</p>
+<p class="subtitle">Set your frequent destinations. Click on the map or enter addresses manually.</p>
 
-<div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-    <div class="slider-group" style="display: flex; align-items: center; gap: 15px;">
-        <i class="ph ph-house" style="font-size: 24px; color: var(--accent-blue); flex-shrink: 0;"></i>
-        <div style="flex-grow: 1;">
-            <div class="input-group" style="margin-bottom: 0;">
-                <label>Home Address</label>
-                <input type="text" class="text-input" placeholder="Enter your home address..." value="123 Horizon Blvd, Techville">
+<div class="location-setup">
+    <!-- Map Container -->
+    <div class="map-container">
+        <div id="interactive-map" class="interactive-map">
+            <!-- Procedural Map Background -->
+            <div class="map-grid"></div>
+
+            <!-- Map Markers -->
+            <div id="home-marker" class="map-marker home-marker" style="display: none;">
+                <i class="ph-fill ph-house"></i>
+                <span class="marker-label">Home</span>
+            </div>
+            <div id="work-marker" class="map-marker work-marker" style="display: none;">
+                <i class="ph-fill ph-briefcase"></i>
+                <span class="marker-label">Work</span>
+            </div>
+            <div id="custom-markers" class="custom-markers-container"></div>
+
+            <!-- Map Instructions -->
+            <div class="map-instructions" id="map-instructions">
+                <i class="ph-fill ph-cursor-click"></i>
+                <span>Click on the map to set your <strong id="current-location-type">Home</strong> location</span>
+            </div>
+
+            <!-- Map Legend -->
+            <div class="map-legend">
+                <div class="legend-item">
+                    <i class="ph-fill ph-house" style="color: var(--accent-blue);"></i>
+                    <span>Home</span>
+                </div>
+                <div class="legend-item">
+                    <i class="ph-fill ph-briefcase" style="color: var(--success);"></i>
+                    <span>Work</span>
+                </div>
+                <div class="legend-item">
+                    <i class="ph-fill ph-map-pin" style="color: var(--hud-alert);"></i>
+                    <span>Custom</span>
+                </div>
             </div>
         </div>
     </div>
-    <div class="slider-group" style="display: flex; align-items: center; gap: 15px;">
-        <i class="ph ph-briefcase" style="font-size: 24px; color: var(--accent-blue); flex-shrink: 0;"></i>
-        <div style="flex-grow: 1;">
-            <div class="input-group" style="margin-bottom: 0;">
-                <label>Work Address</label>
-                <input type="text" class="text-input" placeholder="Enter your work address..." value="AeroSpace HQ, Sector 7">
+
+    <!-- Location List -->
+    <div class="location-list">
+        <div class="location-item" id="home-location">
+            <div class="location-header">
+                <i class="ph-fill ph-house"></i>
+                <span class="location-title">Home</span>
+                <button class="location-action" onclick="setActiveLocation('home')" title="Set on map">
+                    <i class="ph ph-crosshair"></i>
+                </button>
             </div>
+            <input type="text" class="location-input" id="home-input" placeholder="Click map or enter address..."
+                value="">
+            <div class="location-coords" id="home-coords"></div>
         </div>
+
+        <div class="location-item" id="work-location">
+            <div class="location-header">
+                <i class="ph-fill ph-briefcase"></i>
+                <span class="location-title">Work</span>
+                <button class="location-action" onclick="setActiveLocation('work')" title="Set on map">
+                    <i class="ph ph-crosshair"></i>
+                </button>
+            </div>
+            <input type="text" class="location-input" id="work-input" placeholder="Click map or enter address..."
+                value="">
+            <div class="location-coords" id="work-coords"></div>
+        </div>
+
+        <div id="custom-locations-list"></div>
+
+        <button class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 10px;"
+            onclick="addCustomLocation()">
+            <i class="ph ph-plus"></i> Add Custom Location
+        </button>
     </div>
-    <button class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 5px;" onclick="this.parentElement.insertAdjacentHTML('beforeend', '<div class=\'slider-group\' style=\'display:flex;align-items:center;gap:15px;\'><i class=\'ph ph-map-pin\' style=\'font-size:24px;color:var(--accent-blue);flex-shrink:0;\'></i><div style=\'flex-grow:1;\'><div class=\'input-group\' style=\'margin-bottom:0;\'><label>Custom Preset</label><input type=\'text\' class=\'text-input\' placeholder=\'Enter address...\'></div></div></div>')">
-        <i class="ph ph-plus"></i> Add Another Preset
-    </button>
 </div>
 
 <div class="controls">
     <button class="btn btn-secondary" onclick="loadStep(2)">Back</button>
-    <button class="btn btn-primary" onclick="loadStep(4)">Save & Continue <i class="ph ph-arrow-right"></i></button>
+    <button class="btn btn-primary" onclick="saveLocations()">Save & Continue <i class="ph ph-arrow-right"></i></button>
 </div>
+
+<style>
+    .location-setup {
+        display: flex;
+        gap: 20px;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .map-container {
+        flex: 1.5;
+        min-width: 0;
+    }
+
+    .interactive-map {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #0a0c10 0%, #13151a 100%);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        position: relative;
+        overflow: hidden;
+        cursor: crosshair;
+        min-height: 300px;
+    }
+
+    .map-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 30px 30px;
+        pointer-events: none;
+    }
+
+    .map-marker {
+        position: absolute;
+        transform: translate(-50%, -100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        animation: markerDrop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        cursor: move;
+        z-index: 10;
+    }
+
+    .map-marker i {
+        font-size: 28px;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+    }
+
+    .home-marker i {
+        color: var(--accent-blue);
+    }
+
+    .work-marker i {
+        color: var(--success);
+    }
+
+    .custom-marker i {
+        color: var(--hud-alert);
+    }
+
+    .marker-label {
+        font-size: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 2px 8px;
+        border-radius: 4px;
+        white-space: nowrap;
+        font-weight: 500;
+    }
+
+    .map-instructions {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        padding: 10px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        pointer-events: none;
+        z-index: 20;
+    }
+
+    .map-instructions i {
+        font-size: 16px;
+        color: var(--accent-blue);
+    }
+
+    .map-instructions strong {
+        color: var(--accent-blue);
+    }
+
+    .map-legend {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 11px;
+        pointer-events: none;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .legend-item i {
+        font-size: 14px;
+    }
+
+    .location-list {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    .location-list::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .location-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+    }
+
+    .location-item {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .location-item.active {
+        border-color: var(--accent-blue);
+        background: rgba(56, 189, 248, 0.05);
+        box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
+    }
+
+    .location-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .location-header i {
+        font-size: 18px;
+        color: var(--accent-blue);
+    }
+
+    .location-title {
+        flex: 1;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .location-action {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+        font-size: 14px;
+    }
+
+    .location-action:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--accent-blue);
+        border-color: var(--accent-blue);
+    }
+
+    .location-input {
+        width: 100%;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        color: #fff;
+        font-family: var(--font-main);
+        font-size: 12px;
+        outline: none;
+        transition: 0.3s;
+    }
+
+    .location-input:focus {
+        border-color: var(--accent-blue);
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .location-coords {
+        font-size: 10px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+        font-family: monospace;
+    }
+
+    @keyframes markerDrop {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, -120%) scale(0.5);
+        }
+
+        60% {
+            transform: translate(-50%, -95%);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translate(-50%, -100%) scale(1);
+        }
+    }
+</style>
+
+<script>
+    let activeLocationType = 'home';
+    let customLocationCount = 0;
+    let locations = {
+        home: null,
+        work: null,
+        custom: []
+    };
+
+    // Initialize map click handler
+    document.getElementById('interactive-map').addEventListener('click', function (e) {
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Convert to percentage for responsive positioning
+        const xPercent = (x / rect.width) * 100;
+        const yPercent = (y / rect.height) * 100;
+
+        setLocationOnMap(activeLocationType, xPercent, yPercent);
+    });
+
+    function setActiveLocation(type) {
+        activeLocationType = type;
+
+        // Update UI
+        document.querySelectorAll('.location-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.getElementById(`${type}-location`)?.classList.add('active');
+
+        // Update instructions
+        const typeNames = {
+            'home': 'Home',
+            'work': 'Work',
+            'custom': 'Custom'
+        };
+        document.getElementById('current-location-type').textContent = typeNames[type] || 'Custom';
+
+        updateAnnotation(`Click on the map to set your ${typeNames[type]} location`, true);
+    }
+
+    function setLocationOnMap(type, xPercent, yPercent) {
+        let marker, input, coords;
+
+        if (type === 'home' || type === 'work') {
+            marker = document.getElementById(`${type}-marker`);
+            input = document.getElementById(`${type}-input`);
+            coords = document.getElementById(`${type}-coords`);
+
+            marker.style.display = 'flex';
+            marker.style.left = xPercent + '%';
+            marker.style.top = yPercent + '%';
+
+            // Generate mock address
+            const address = generateMockAddress(xPercent, yPercent, type);
+            input.value = address;
+            coords.textContent = `${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%`;
+
+            locations[type] = { x: xPercent, y: yPercent, address };
+
+            showHudAlert(`${type === 'home' ? 'Home' : 'Work'} location set`, '#00ff88');
+            speak(`${type === 'home' ? 'Home' : 'Work'} location saved.`);
+
+        } else if (type.startsWith('custom-')) {
+            // Handle custom location
+            const customId = type;
+            marker = document.getElementById(`marker-${customId}`);
+            input = document.getElementById(`input-${customId}`);
+            coords = document.getElementById(`coords-${customId}`);
+
+            if (marker) {
+                marker.style.left = xPercent + '%';
+                marker.style.top = yPercent + '%';
+                marker.style.display = 'flex';
+
+                const address = generateMockAddress(xPercent, yPercent, 'custom');
+                input.value = address;
+                coords.textContent = `${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%`;
+
+                // Update locations array
+                const customIndex = locations.custom.findIndex(loc => loc.id === customId);
+                if (customIndex >= 0) {
+                    locations.custom[customIndex] = { id: customId, x: xPercent, y: yPercent, address };
+                }
+
+                showHudAlert('Custom location set', '#00ff88');
+            }
+        }
+    }
+
+    function generateMockAddress(x, y, type) {
+        const streets = ['Main St', 'Oak Ave', 'Maple Dr', 'Pine Rd', 'Cedar Ln', 'Elm St', 'Park Blvd'];
+        const cities = ['Techville', 'Innovation City', 'Future Town', 'Metro Heights'];
+
+        const streetNum = Math.floor(100 + (x * 50));
+        const street = streets[Math.floor((x + y) / 30) % streets.length];
+        const city = cities[Math.floor(y / 25) % cities.length];
+
+        return `${streetNum} ${street}, ${city}`;
+    }
+
+    function addCustomLocation() {
+        customLocationCount++;
+        const customId = `custom-${customLocationCount}`;
+
+        // Add to locations array
+        locations.custom.push({ id: customId, x: null, y: null, address: '' });
+
+        // Add marker to map
+        const marker = document.createElement('div');
+        marker.id = `marker-${customId}`;
+        marker.className = 'map-marker custom-marker';
+        marker.style.display = 'none';
+        marker.innerHTML = `
+        <i class="ph-fill ph-map-pin"></i>
+        <span class="marker-label">Custom ${customLocationCount}</span>
+    `;
+        document.getElementById('custom-markers').appendChild(marker);
+
+        // Add to location list
+        const locationItem = document.createElement('div');
+        locationItem.className = 'location-item';
+        locationItem.id = `${customId}-location`;
+        locationItem.innerHTML = `
+        <div class="location-header">
+            <i class="ph-fill ph-map-pin"></i>
+            <span class="location-title">Custom Location ${customLocationCount}</span>
+            <button class="location-action" onclick="setActiveLocation('${customId}')" title="Set on map">
+                <i class="ph ph-crosshair"></i>
+            </button>
+            <button class="location-action" onclick="removeCustomLocation('${customId}')" title="Remove" style="color: var(--danger);">
+                <i class="ph ph-trash"></i>
+            </button>
+        </div>
+        <input type="text" class="location-input" id="input-${customId}" placeholder="Click map or enter address...">
+        <div class="location-coords" id="coords-${customId}"></div>
+    `;
+        document.getElementById('custom-locations-list').appendChild(locationItem);
+
+        // Auto-select this location
+        setActiveLocation(customId);
+
+        updateAnnotation(`Custom location ${customLocationCount} added - click on map to set position`, true);
+    }
+
+    function removeCustomLocation(customId) {
+        // Remove from locations array
+        locations.custom = locations.custom.filter(loc => loc.id !== customId);
+
+        // Remove marker
+        document.getElementById(`marker-${customId}`)?.remove();
+
+        // Remove from list
+        document.getElementById(`${customId}-location`)?.remove();
+
+        // Reset to home if this was active
+        if (activeLocationType === customId) {
+            setActiveLocation('home');
+        }
+
+        updateAnnotation('Custom location removed', true);
+    }
+
+    function saveLocations() {
+        // Validate at least home is set
+        if (!locations.home) {
+            showHudAlert('Please set your Home location', '#ff3366');
+            speak('Please set your home location before continuing.');
+            return;
+        }
+
+        // Save to localStorage or session
+        localStorage.setItem('aerodrive_locations', JSON.stringify(locations));
+
+        showHudAlert('Locations saved', '#00ff88');
+        speak('Location presets saved. Moving to the next step.');
+
+        // Update HUD progress
+        const progressFill = document.getElementById('hud-progress-fill');
+        if (progressFill) progressFill.style.width = '50%';
+
+        setTimeout(() => loadStep(4), 800);
+    }
+
+    // Initialize with home selected
+    setActiveLocation('home');
+</script>
