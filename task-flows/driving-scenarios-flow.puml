@@ -11,321 +11,35 @@ skinparam activityEndColor #EF4444
 skinparam activityDiamondBackgroundColor #1A1D24
 skinparam activityDiamondBorderColor #FBBF24
 skinparam arrowColor #38BDF8
-skinparam noteBorderColor #38BDF8
-skinparam noteBackgroundColor #13151a
 
-title AeroDrive Autonomous Driving - Scenario Simulations
+title AeroDrive Driving Scenarios - High Level Flow
 
 start
 
-:System Initializes;
-note right
-  • Load physics engine
-  • Initialize voice recognition
-  • Set up audio engine
-  • Start speed simulation (65 km/h)
-end note
+:Initialize Driving Environment;
 
-:Display cockpit interface;
+partition "Select Scenario" {
+    split
+        :Takeover Drill
+        (Construction Zone);
+    split again
+        :Fatigue Detection
+        (Drowsiness SOS);
+    split again
+        :Battery Range
+        (Predictive Reroute);
+    split again
+        :Touring Mode
+        (Interactive Guide);
+    split again
+        :Weather Reroute
+        (Traction Safety);
+    end split
+}
 
-:Show autonomous mode active;
+:Scenario Execution & Feedback;
 
-:User selects scenario from sidebar;
-
-split
-  -> Scenario 1;
-  :**TAKEOVER: Unmapped Zone**;
-  note right
-    **UC 4B: Construction Zone**
-    • System limit reached
-    • Manual control required
-    • 8-second buffer
-  end note
-  
-  :Detect unmapped zone;
-  
-  :Calculate cognitive buffer (5-8s);
-  
-  :Log: "Unmapped zone detected";
-  
-  :Dim map background;
-  
-  :Display modal: "TAKE MANUAL CONTROL";
-  
-  :Show reason: "Construction zone";
-  
-  :HUD displays: "EYES ON ROAD";
-  
-  :Play warning chime;
-  
-  :Amber strobe effect;
-  
-  :Show steering wheel button;
-  
-  :Start 8-second countdown;
-  
-  while (Timer > 0 AND not gripped?) is (yes)
-    :Decrement timer;
-    :Update modal display;
-  endwhile (gripped OR timeout)
-  
-  if (User gripped wheel?) then (yes)
-    :Stop countdown;
-    :Clear modal;
-    :Play confirmation chime;
-    :Voice: "Handover confirmed";
-    :Switch to manual mode;
-    :HUD: "MANUAL CONTROL" (amber);
-    :Log: "Manual control active";
-    :Hide squeeze button;
-  else (timeout)
-    :Trigger MRM (Minimum Risk Maneuver);
-    :Log: "MRM Triggered" (critical);
-    :Voice: "Engaging hazard stop";
-    :HUD: "HAZARD STOP" (red);
-    :Red strobe effect;
-    :Modal: "AUTONOMOUS STOP";
-    :Decelerate to 0 km/h;
-    :Engage hazard lights;
-    :Pull over safely;
-    :Unlock doors;
-  endif
-  
-split again
-  -> Scenario 2;
-  :**FATIGUE: Driver Drowsiness**;
-  note right
-    **UC 5A/5B: Unresponsiveness**
-    • Eye closure detected
-    • Escalating alerts
-    • Emergency override
-  end note
-  
-  :Detect unresponsiveness;
-  
-  :Log: "Unresponsiveness detected";
-  
-  if (Current mode?) then (Manual)
-    :Force emergency override;
-    :Switch to autonomous mode;
-    note right
-      **Critical Safety Logic**
-      Prevents crash if driver
-      falls asleep while driving
-    end note
-  endif
-  
-  :HUD: "EMERGENCY AUTO" (red);
-  
-  :**Stage 1: Soft Alert**;
-  
-  :Play soft chime;
-  
-  :Voice: "Aditya, please respond";
-  
-  :HUD alert: "WAKE UP";
-  
-  :Wait 4 seconds;
-  
-  if (User responded?) then (yes)
-    :Cancel alert;
-    :Return to normal;
-    stop
-  else (no response)
-    :**Stage 2: Escalation**;
-  endif
-  
-  :Play jarring buzzer;
-  
-  :Red strobe effect;
-  
-  :Shake steering wheel (CSS);
-  
-  :Show modal: "FATIGUE DETECTED";
-  
-  :Display squeeze button;
-  
-  :Start 10-second SOS countdown;
-  
-  while (Timer > 0 AND not gripped?) is (yes)
-    :Decrement timer;
-    :Update countdown;
-  endwhile (gripped OR timeout)
-  
-  if (User gripped wheel?) then (yes)
-    :Cancel SOS;
-    :Stop countdown;
-    :Clear alerts;
-    :Voice: "Handover confirmed";
-    :Switch to manual mode;
-    :Suggest pulling over;
-  else (timeout)
-    :Trigger SOS;
-    :Voice: "Calling emergency services";
-    :Modal: "SOS ACTIVE";
-    :Decelerate to 0 km/h;
-    :Engage hazard lights;
-    :Pull over safely;
-    :Call emergency services;
-    :Send location data;
-  endif
-  
-split again
-  -> Scenario 3;
-  :**BATTERY: Range Anxiety**;
-  note right
-    **UC 1C: Dynamic Prediction**
-    • Insufficient range
-    • Charging desert ahead
-    • Reroute recommendation
-  end note
-  
-  :Predictive algorithm runs;
-  
-  :Detect: Range < Distance to charger;
-  
-  :Log: "Range insufficient";
-  
-  :HUD: "CRITICAL RANGE" (amber);
-  
-  :Play alert chime;
-  
-  :Show modal: "RECOMMENDED STOP";
-  
-  :Display reroute information;
-  
-  :Voice: "Reroute to station?";
-  
-  :Activate voice UI;
-  
-  :Show action buttons;
-  
-  :Enable voice recognition;
-  
-  fork
-    :Wait for button click;
-  fork again
-    :Wait for voice command;
-  end fork
-  
-  if (User response?) then (Accept/Yes)
-    :Hide voice UI;
-    :Voice: "Rerouting to station";
-    :Log: "Reroute confirmed";
-    :Close modal;
-    :Dim map;
-    :Amber strobe;
-    :Enter low power mode;
-    :Reduce speed to 50 km/h;
-    :Dim ambient lights;
-    :Reduce AC;
-    :Calculate new route;
-  else (Dismiss/No)
-    :Hide voice UI;
-    :Voice: "Engaging low battery mode";
-    :Log: "Driver dismissed. Forcing low power";
-    :Close modal;
-    :HUD alert: "STALL IMMINENT" (red);
-    :Force low power mode;
-    :Dim map;
-    :Amber strobe;
-    :Reduce speed to 50 km/h;
-    :Persistent warning;
-    note right
-      **Safety Guardrail**
-      System forces low power
-      even if user dismisses
-    end note
-  endif
-  
-split again
-  -> Scenario 4;
-  :**TOURING: Journey Guide**;
-  note right
-    **UC 3A/3B: Voice-First**
-    • Active engagement
-    • Interactive exploration
-    • Contextual commentary
-  end note
-  
-  :User selects touring mode;
-  
-  :Log: "Touring mode activated";
-  
-  :Play info chime;
-  
-  :Show modal: "TOURING MODE";
-  
-  :Display compass icon (blue);
-  
-  :Voice: "Welcome to touring mode";
-  
-  :Show voice UI;
-  
-  :Display example questions;
-  
-  :Show action buttons;
-  
-  if (User clicks?) then (Start Tour)
-    :Close modal;
-    :Voice: "Tour started";
-    :Log: "Tour guide active";
-    :HUD: "TOURING MODE ACTIVE";
-    
-    :**Periodic Commentary**;
-    
-    :Wait 8 seconds;
-    
-    :Voice: "On your left, old town hall";
-    
-    :Log: "Tour: Old Town Hall";
-    
-    :Wait 8 seconds;
-    
-    :Voice: "Coming up, riverside park";
-    
-    :Log: "Tour: Riverside Park";
-    
-    :Continue autonomous driving;
-    
-    note right
-      **Future Enhancement**
-      • Real GPS integration
-      • Landmark database
-      • Natural language Q&A
-      • Context-aware responses
-    end note
-    
-  else (Cancel)
-    :Close modal;
-    :Hide voice UI;
-    :Voice: "Touring mode cancelled";
-    :Log: "Touring deactivated";
-    :HUD: "AUTONOMOUS MODE";
-  endif
-  
-end split
-
-:Scenario completes;
-
-:User can reset system;
-
-if (Reset clicked?) then (yes)
-  :Clear all timers;
-  :Cancel voice synthesis;
-  :Reset to autonomous mode;
-  :Remove all strobes;
-  :Hide all modals;
-  :Hide squeeze button;
-  :Reset speed to 65 km/h;
-  :HUD: "AUTONOMOUS" (blue);
-  :Clear system log;
-  :Log: "System Reset";
-  :Return to idle state;
-else (no)
-  :Maintain current state;
-endif
+:System Reset;
 
 stop
-
 @enduml
