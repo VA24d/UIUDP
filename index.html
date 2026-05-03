@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AeroDrive — Setup & Simulator</title>
     <!-- First-time onboarding + driving simulator combined for GitHub Pages (single entry: this file). -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -222,21 +221,43 @@
             var bSim = document.getElementById('nav-btn-sim');
             var paneOn = document.getElementById('pane-onboarding');
             var paneSi = document.getElementById('pane-simulator');
+            var onboardingActive = true;
+            
             function showSetup() {
                 paneOn.classList.remove('hidden');
                 paneSi.classList.add('hidden');
                 bSetup.classList.add('active');
                 bSim.classList.remove('active');
+                onboardingActive = true;
+                // Resume onboarding voice if it was active
+                if (window.isListening && window.recognition) {
+                    try { window.recognition.start(); } catch (e) { }
+                }
             }
+            
             function showSim() {
                 paneOn.classList.add('hidden');
                 paneSi.classList.remove('hidden');
                 bSim.classList.add('active');
                 bSetup.classList.remove('active');
+                onboardingActive = false;
+                
+                // Call centralized cleanup in script.js
+                if (typeof window.stopOnboardingActivity === 'function') {
+                    window.stopOnboardingActivity();
+                }
+                
+                // Stop any onboarding audio UI
+                const voiceBar = document.getElementById('voice-bar');
+                if (voiceBar) voiceBar.classList.remove('speaking');
             }
+
             bSetup.addEventListener('click', showSetup);
             bSim.addEventListener('click', showSim);
             if (typeof window.location.search !== 'undefined' && window.location.search.indexOf('sim=1') !== -1) showSim();
+
+            // Expose state for script.js to check
+            window.isOnboardingActive = function () { return onboardingActive; };
         })();
     </script>
     <script src="script.js"></script>

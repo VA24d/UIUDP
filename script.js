@@ -1,12 +1,13 @@
 let currentStep = 1;
 let profileSubStep = 0;
-let isListening = false;
-let recognition = null;
+window.isListening = false;
+window.recognition = null;
 let awaitingName = false; // Flag: are we waiting for the user to say their name?
 let faceCameraStream = null;
 /** While on face sub-step, voice "next" is ignored until the scan animation finishes (avoids double-fire / TTS echo skipping the camera). */
 let faceRegistrationComplete = true;
 let faceScanTimeoutIds = [];
+let simCountdownTimer = null;
 /** Ignore voice navigation briefly after TTS ends (reduces speaker→mic "next" false triggers). */
 let navBlockedUntil = 0;
 
@@ -24,6 +25,10 @@ const voiceMessages = {
 };
 
 function speak(text) {
+    // Don't speak when simulator is active
+    if (typeof window.isOnboardingActive === 'function' && !window.isOnboardingActive()) {
+        return;
+    }
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
@@ -58,12 +63,12 @@ function initRecognition() {
         document.getElementById('voice-text').textContent = 'Voice commands not supported in this browser';
         return;
     }
-    recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    window.recognition = new SpeechRecognition();
+    window.recognition.continuous = true;
+    window.recognition.interimResults = true;
+    window.recognition.lang = 'en-US';
 
-    recognition.onresult = (event) => {
+    window.recognition.onresult = (event) => {
         let transcript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
             transcript = event.results[i][0].transcript.trim().toLowerCase();
@@ -72,40 +77,44 @@ function initRecognition() {
 
             // Process immediately on interim results for blazing fast response
             const handled = handleVoiceCommand(transcript, event.results[i].isFinal);
-            
+
             // If we successfully handled a command, stop recognition to flush the buffer
             if (handled) {
-                recognition.stop();
+                window.recognition.stop();
                 break;
             }
         }
     };
 
-    recognition.onerror = (e) => {
+    window.recognition.onerror = (e) => {
         if (e.error === 'no-speech' || e.error === 'aborted') return;
         console.warn('Recognition error:', e.error);
     };
 
-    recognition.onend = () => {
+    window.recognition.onend = () => {
         // Auto-restart if we're supposed to be listening
-        if (isListening) {
-            try { recognition.start(); } catch(e) {}
+        if (window.isListening) {
+            try { window.recognition.start(); } catch (e) { }
         }
     };
 }
 
 function toggleMic() {
-    if (!recognition) initRecognition();
-    if (!recognition) return;
+    // Don't allow voice control when simulator is active
+    if (typeof window.isOnboardingActive === 'function' && !window.isOnboardingActive()) {
+        return;
+    }
+    if (!window.recognition) initRecognition();
+    if (!window.recognition) return;
     const btn = document.getElementById('mic-toggle');
-    if (isListening) {
-        isListening = false;
-        recognition.stop();
+    if (window.isListening) {
+        window.isListening = false;
+        if (window.recognition) window.recognition.stop();
         btn.classList.remove('listening');
         document.getElementById('voice-text').textContent = 'Mic off — tap to listen';
     } else {
-        isListening = true;
-        try { recognition.start(); } catch(e) {}
+        window.isListening = true;
+        try { if (window.recognition) window.recognition.start(); } catch (e) { }
         btn.classList.add('listening');
         document.getElementById('voice-text').textContent = 'Listening... try "next", "back", or zone names';
     }
@@ -116,15 +125,15 @@ function toggleMic() {
 // ═══════════════════════════════════════════
 function levenshtein(a, b) {
     const m = a.length, n = b.length;
-    const dp = Array.from({length: m+1}, () => Array(n+1).fill(0));
+    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
     for (let i = 0; i <= m; i++) dp[i][0] = i;
     for (let j = 0; j <= n; j++) dp[0][j] = j;
     for (let i = 1; i <= m; i++) {
         for (let j = 1; j <= n; j++) {
             dp[i][j] = Math.min(
-                dp[i-1][j] + 1,
-                dp[i][j-1] + 1,
-                dp[i-1][j-1] + (a[i-1] !== b[j-1] ? 1 : 0)
+                dp[i - 1][j] + 1,
+                dp[i][j - 1] + 1,
+                dp[i - 1][j - 1] + (a[i - 1] !== b[j - 1] ? 1 : 0)
             );
         }
     }
@@ -150,6 +159,10 @@ let lastCommandTime = 0;
 const COMMAND_COOLDOWN = 1500; // 1.5 seconds
 
 function handleVoiceCommand(transcript, isFinal) {
+    // Don't process commands if onboarding is not active
+    if (typeof window.isOnboardingActive === 'function' && !window.isOnboardingActive()) {
+        return false;
+    }
     // If we're waiting for the user to say their name (Step 1 mic flow)
     if (awaitingName) {
         // Name capture should ideally wait for final to get the full name
@@ -393,7 +406,7 @@ function updateHudContext(step) {
 function updateAnnotation(text, isAction = false) {
     const el = document.getElementById('cockpit-annotation');
     if (!el) return;
-    
+
     if (isAction) {
         if (annotationTimer) clearTimeout(annotationTimer);
         el.textContent = 'Action: ' + text;
@@ -440,6 +453,30 @@ function initStepLogic(step) {
     if (step === 6) initTuning();
 }
 
+/** Global cleanup for when switching to Simulator mode */
+window.stopOnboardingActivity = function() {
+    // Stop mic
+    window.isListening = false;
+    if (window.recognition) {
+        try { window.recognition.stop(); } catch(e) {}
+    }
+    const btn = document.getElementById('mic-toggle');
+    if (btn) btn.classList.remove('listening');
+
+    // Stop camera
+    stopFaceCamera();
+    // Clear timers
+    clearFaceScanTimeouts();
+    if (simCountdownTimer) {
+        clearInterval(simCountdownTimer);
+        simCountdownTimer = null;
+    }
+    // Stop TTS
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+};
+
 // ═══════════════════════════════════════════
 //  STEP 1: Profile — uses actual spoken name
 // ═══════════════════════════════════════════
@@ -460,12 +497,13 @@ function startNameCapture() {
     // Use speech recognition to capture the name
     if (SpeechRecognition) {
         awaitingName = true;
-        if (!isListening) {
+        if (!window.isListening) {
             // Temporarily start recognition just for name capture
-            if (!recognition) initRecognition();
-            try { recognition.start(); isListening = true;
+            if (!window.recognition) initRecognition();
+            try {
+                window.recognition.start(); window.isListening = true;
                 document.getElementById('mic-toggle').classList.add('listening');
-            } catch(e) {}
+            } catch (e) { }
         }
     } else {
         // Fallback if no speech recognition
@@ -494,7 +532,7 @@ function finishNameCapture(name) {
     document.getElementById('input-display').value = displayName;
     document.querySelector('.voice-label').textContent = `Heard: "${name}"`;
     showHudAlert('Voice Recognized', '#00ff88');
-    
+
     // Update HUD with profile status
     const label = document.getElementById('hud-context-label');
     if (label) label.textContent = 'PROFILE: NAME CAPTURED';
@@ -513,7 +551,7 @@ function advanceProfileSetup() {
         dots[0].classList.replace('active', 'done'); dots[1].classList.add('active');
         showHudAlert('Profile Name Saved', '#00ff88');
         speak("Now let's register your face. Please allow camera access and position your face within the circle.");
-        
+
         void (async () => {
             const success = await startFaceCamera();
             const sc = document.getElementById('face-scanner');
@@ -582,7 +620,7 @@ function selectZone(zone) {
     document.getElementById('zone-controls').classList.remove('hidden');
     document.getElementById('adj-val').textContent = seatValues[zone];
     document.getElementById('tilt-val').textContent = seatTilts[zone] + '°';
-    
+
     // Update HUD with active zone
     const label = document.getElementById('hud-context-label');
     if (label) label.textContent = `CABIN: ${zone.toUpperCase()}`;
@@ -652,11 +690,11 @@ function initLearn() {
 function goSlide(n) {
     currentSlide = n;
     updateSlideUI();
-    
+
     // Update HUD with slide info
     const slides = ['CAPABILITIES', 'SAFETY', 'CHARGING', 'TAKE-OVER'];
     const label = document.getElementById('hud-context-label');
-    if (label) label.textContent = `LEARN: ${slides[n-1]}`;
+    if (label) label.textContent = `LEARN: ${slides[n - 1]}`;
 
     if (slideVoice[n]) speak(slideVoice[n]);
 }
@@ -715,7 +753,6 @@ function updateSlideUI() {
 
 // ═══ Step 5: Simulation — Multi-stage ═══
 let simCountdown = 10;
-let simCountdownTimer = null;
 let simStartTime = 0;
 let simAttempt = 1;
 
@@ -738,7 +775,7 @@ function initSimulation() {
 
     // Stage 1: Autonomous driving (3 seconds)
     speak("You are now driving autonomously at 65 miles per hour. Watch what happens next.");
-    
+
     setTimeout(() => {
         // Stage 2: Warning appears
         document.getElementById('sim-stage-1').classList.remove('active');
@@ -746,19 +783,19 @@ function initSimulation() {
         document.getElementById('sim-action').classList.remove('hidden');
         speak("Warning! Unmapped zone detected. You have 10 seconds. Grab the steering wheel!");
         showHudAlert('⚠ TAKE OVER', '#ff3366');
-        
+
         simStartTime = Date.now();
         simCountdown = 10;
-        
+
         // Start countdown
         const circumference = 276.46;
         const circle = document.getElementById('countdown-circle');
         const numEl = document.getElementById('countdown-num');
-        
+
         // Reset countdown visual
         if (circle) circle.style.strokeDashoffset = 0;
         if (numEl) { numEl.textContent = '10'; numEl.style.fontSize = ''; numEl.style.color = ''; }
-        
+
         simCountdownTimer = setInterval(() => {
             simCountdown--;
             if (numEl) numEl.textContent = simCountdown;
@@ -789,7 +826,7 @@ function initSimulation() {
     if (btnHold && fill) {
         const newBtn = btnHold.cloneNode(true);
         btnHold.parentNode.replaceChild(newBtn, btnHold);
-        
+
         const start = () => {
             if (newBtn.classList.contains('secured')) return;
             newBtn.classList.add('holding');
@@ -802,10 +839,10 @@ function initSimulation() {
                     newBtn.classList.remove('holding');
                     newBtn.classList.add('secured');
                     newBtn.querySelector('span').innerHTML = '<i class="ph-fill ph-check-circle" style="margin-right:6px;"></i> CONTROL SECURED';
-                    
+
                     // Calculate response time
                     const responseTime = ((Date.now() - simStartTime) / 1000).toFixed(1);
-                    
+
                     // Stage 3: Success
                     setTimeout(() => {
                         document.getElementById('sim-stage-2').classList.remove('active');
@@ -814,7 +851,7 @@ function initSimulation() {
                         document.getElementById('response-time').textContent = responseTime;
                         if (btnNext) btnNext.disabled = false;
                         showHudAlert('Override Successful', '#10B981');
-                        
+
                         // Update HUD on success
                         const label = document.getElementById('hud-context-label');
                         if (label) label.textContent = 'TAKE-OVER: SECURED';
@@ -861,27 +898,27 @@ function initTuning() {
 function setAccel(val) {
     tuneState.accel = val;
     updateOptionButtons('tune-speed', val);
-    document.getElementById('val-accel').textContent = ['Smooth','Standard','Dynamic'][val-1];
+    document.getElementById('val-accel').textContent = ['Smooth', 'Standard', 'Dynamic'][val - 1];
     updateTunePreview();
     // HUD sync
     const bar = document.getElementById('hud-accel-bar');
     if (bar) bar.style.width = (val * 33.3) + '%';
-    
+
     if (val === 3) {
         updateAnnotation('Dynamic Mode: Adaptive bolsters and active seat tilting enabled for G-force simulation', true);
     } else {
         updateAnnotation('Drive Profile updated - throttle and braking response smoothed', true);
     }
 
-    speak(['Smooth acceleration selected. Gentle and relaxed.', 'Standard acceleration. Balanced response.', 'Dynamic mode engaged. Seat bolsters will tighten during acceleration.'][val-1]);
+    speak(['Smooth acceleration selected. Gentle and relaxed.', 'Standard acceleration. Balanced response.', 'Dynamic mode engaged. Seat bolsters will tighten during acceleration.'][val - 1]);
 }
 
 function setDist(val) {
     tuneState.dist = val;
     updateOptionButtons('tune-dist', val);
-    document.getElementById('val-dist').textContent = ['Close','Medium','Far'][val-1];
+    document.getElementById('val-dist').textContent = ['Close', 'Medium', 'Far'][val - 1];
     updateTunePreview();
-    updateAnnotation(`Following distance recalibrated to ${['25m', '35m', '45m'][val-1]} safety margin`, true);
+    updateAnnotation(`Following distance recalibrated to ${['25m', '35m', '45m'][val - 1]} safety margin`, true);
     // HUD sync
     const d = document.getElementById('hud-dist-dots');
     if (d) { let h = ''; for (let i = 0; i < 3; i++) h += `<div class="dot ${i < val ? 'active' : ''}"></div>`; d.innerHTML = h; }
@@ -890,9 +927,9 @@ function setDist(val) {
 function setLane(val) {
     tuneState.lane = val;
     updateOptionButtons('tune-lane', val);
-    document.getElementById('val-lane').textContent = ['Left','Center','Right'][val-1];
+    document.getElementById('val-lane').textContent = ['Left', 'Center', 'Right'][val - 1];
     updateTunePreview();
-    updateAnnotation(`Lane centering preference shifted to ${['left', 'center', 'right'][val-1]} bias`, true);
+    updateAnnotation(`Lane centering preference shifted to ${['left', 'center', 'right'][val - 1]} bias`, true);
 }
 
 function updateOptionButtons(cardId, activeVal) {
@@ -926,12 +963,12 @@ function updateTunePreview() {
     const gforces = { 1: '0.2', 2: '0.3', 3: '0.6' };
     const tiltLabels = { 1: 'Gentle', 2: 'Normal', 3: 'Sport' };
     const tiltIcons = { 1: 'ph-arrow-bend-up-right', 2: 'ph-arrow-right', 3: 'ph-arrow-bend-down-right' };
-    
+
     const speedEl = document.getElementById('preview-speed');
     const gforceEl = document.getElementById('preview-gforce');
     const tiltIcon = document.getElementById('seat-tilt-icon');
     const tiltLabel = document.getElementById('tilt-label');
-    
+
     if (speedEl) speedEl.textContent = speeds[tuneState.accel];
     if (gforceEl) gforceEl.textContent = gforces[tuneState.accel];
     if (tiltLabel) tiltLabel.textContent = tiltLabels[tuneState.accel];
@@ -971,10 +1008,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.speechSynthesis.getVoices();
         window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
-    
+
     initRecognition();
     // Auto-start listening mode for a seamless voice experience
-    toggleMic(); 
-    
+    toggleMic();
+
     loadStep(1);
 });

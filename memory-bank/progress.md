@@ -14,6 +14,7 @@
 - Speech Recognition with fuzzy matching (Levenshtein distance, threshold 3)
 - Commands: next/back/continue/complete, zone names, slide names, "hey aerodrive"
 - Voice bar shows TTS text, heard transcript, mic toggle with listening animation
+- **Simulator Isolation**: Onboarding voice/logic correctly pauses when switching to the driving simulator
 
 ### HUD Instrument Cluster
 - Dynamic context label (PROFILE: SETTING UP → CABIN: CALIBRATING → etc.)

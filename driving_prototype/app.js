@@ -301,6 +301,12 @@ const SystemLogic = {
     },
     resetSystem: function () {
         clearInterval(CarState.timer); window.speechSynthesis.cancel();
+
+        // Stop fatigue beeping if active
+        if (Scenarios.fatigue && Scenarios.fatigue.beepInterval) {
+            Scenarios.fatigue.stopBeeping();
+        }
+
         CarState.mode = 'autonomous'; CarState.currentScenario = null;
         CarPhysics.setSpeed(65);
 
@@ -336,7 +342,14 @@ const SystemLogic = {
     handleUserGrip: function () {
         if (['takeover', 'fatigue'].includes(CarState.currentScenario)) {
             const scen = CarState.currentScenario;
-            clearInterval(CarState.timer); AudioEngine.chimeInfo();
+            clearInterval(CarState.timer);
+
+            // Stop continuous beeping for fatigue scenario
+            if (scen === 'fatigue' && Scenarios.fatigue.beepInterval) {
+                Scenarios.fatigue.stopBeeping();
+            }
+
+            AudioEngine.chimeInfo();
             this.speak("Handover confirmed."); CarState.mode = 'manual';
             this.resetSystem();
             UI.hudStatus.className = 'system-status';
@@ -396,6 +409,7 @@ const Scenarios = {
         }
     },
     'fatigue': {
+        beepInterval: null,
         execute: function () {
             SystemLogic.logHardware("Unresponsiveness detected.", "critical");
             CarState.mode = 'autonomous';
@@ -411,7 +425,13 @@ const Scenarios = {
             CarState.timer = setTimeout(() => { this.escalate(); }, 4000);
         },
         escalate: function () {
-            AudioEngine.buzzerJarring(); UI.overlay.className = 'strobe-red';
+            // Start continuous beeping to wake the user
+            this.beepInterval = setInterval(() => {
+                AudioEngine.buzzerJarring();
+            }, 2500); // Beep every 2.5 seconds (slightly longer than the 2s tone duration)
+
+            AudioEngine.buzzerJarring(); // First beep immediately
+            UI.overlay.className = 'strobe-red';
             UI.wheel.classList.add('shake-hard'); UI.squeezeBtn.classList.add('hidden');
 
             UI.map.classList.add('dim-map'); UI.modal.classList.remove('hidden');
@@ -431,12 +451,22 @@ const Scenarios = {
                 if (timerValue) timerValue.innerText = timeLeft;
                 if (timeLeft <= 0) {
                     clearInterval(CarState.timer);
+                    if (this.beepInterval) {
+                        clearInterval(this.beepInterval);
+                        this.beepInterval = null;
+                    }
                     TakeoverHold.teardown();
                     SystemLogic.speak("Calling emergency services.");
                     UI.modalTitle.innerText = "SOS ACTIVE";
                     CarPhysics.setSpeed(0); // Force pull over
                 }
             }, 1000);
+        },
+        stopBeeping: function () {
+            if (this.beepInterval) {
+                clearInterval(this.beepInterval);
+                this.beepInterval = null;
+            }
         }
     },
     'battery': {

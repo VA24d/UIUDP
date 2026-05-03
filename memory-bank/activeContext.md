@@ -14,6 +14,7 @@
 - **Voice Commands**: "next", "back", "continue", "complete", plus step-specific: zone names on comfort, slide names on learn.
 - **Actual Name Capture**: Step 1 uses real speech recognition to capture the user's spoken name (not hardcoded).
 - **Voice bar UI**: Bottom bar shows TTS text, heard transcript, mic toggle, and speaker pulse animation.
+- **Simulator Isolation**: Voice recognition and TTS now correctly pause and reset when switching to the "Driving Simulator" tab to prevent cross-interference.
 
 ### Driver Dashboard (formerly HUD)
 - **Clean Side-by-Side Layout**: Removed the simulated 3D car interior background (`bg.png`) in favor of a clean, side-by-side presentation view (`.cockpit-layout`). The Main Infotainment screen sits perfectly beside the Steering Wheel Dashboard for clear, focused interaction.
