@@ -1,14 +1,34 @@
 <h2 class="title">Location Presets</h2>
-<p class="subtitle">Set your frequent destinations. Click on the map or enter addresses manually.</p>
+<p class="subtitle">Click on the map to select your Home and Work locations.</p>
 
 <div class="location-setup">
-    <!-- Map Container -->
+    <!-- Simulated Map Container -->
     <div class="map-container">
         <div id="interactive-map" class="interactive-map">
-            <!-- Procedural Map Background -->
+            <!-- Map Grid Background -->
             <div class="map-grid"></div>
 
-            <!-- Map Markers -->
+            <!-- Predefined Location Zones (invisible clickable areas) -->
+            <div class="location-zone zone-residential" data-location="home-1" title="Residential District">
+                <div class="zone-label">Residential<br>District</div>
+            </div>
+            <div class="location-zone zone-downtown" data-location="work-1" title="Downtown Business">
+                <div class="zone-label">Downtown<br>Business</div>
+            </div>
+            <div class="location-zone zone-tech" data-location="work-2" title="Tech Park">
+                <div class="zone-label">Tech<br>Park</div>
+            </div>
+            <div class="location-zone zone-suburbs" data-location="home-2" title="Suburban Area">
+                <div class="zone-label">Suburban<br>Area</div>
+            </div>
+            <div class="location-zone zone-industrial" data-location="work-3" title="Industrial Zone">
+                <div class="zone-label">Industrial<br>Zone</div>
+            </div>
+            <div class="location-zone zone-uptown" data-location="home-3" title="Uptown">
+                <div class="zone-label">Uptown</div>
+            </div>
+
+            <!-- Active Markers -->
             <div id="home-marker" class="map-marker home-marker" style="display: none;">
                 <i class="ph-fill ph-house"></i>
                 <span class="marker-label">Home</span>
@@ -17,12 +37,11 @@
                 <i class="ph-fill ph-briefcase"></i>
                 <span class="marker-label">Work</span>
             </div>
-            <div id="custom-markers" class="custom-markers-container"></div>
 
             <!-- Map Instructions -->
-            <div class="map-instructions" id="map-instructions">
+            <div class="map-instructions">
                 <i class="ph-fill ph-cursor-click"></i>
-                <span>Click on the map to set your <strong id="current-location-type">Home</strong> location</span>
+                <span>Click a zone to set your <strong id="current-location-type">Home</strong> location</span>
             </div>
 
             <!-- Map Legend -->
@@ -35,48 +54,42 @@
                     <i class="ph-fill ph-briefcase" style="color: var(--success);"></i>
                     <span>Work</span>
                 </div>
-                <div class="legend-item">
-                    <i class="ph-fill ph-map-pin" style="color: var(--hud-alert);"></i>
-                    <span>Custom</span>
-                </div>
             </div>
         </div>
     </div>
 
     <!-- Location List -->
     <div class="location-list">
-        <div class="location-item" id="home-location">
+        <div class="location-item active" id="home-location">
             <div class="location-header">
                 <i class="ph-fill ph-house"></i>
                 <span class="location-title">Home</span>
-                <button class="location-action" onclick="setActiveLocation('home')" title="Set on map">
+                <button class="location-action" onclick="setActiveLocation('home')" title="Select to set">
                     <i class="ph ph-crosshair"></i>
                 </button>
             </div>
-            <input type="text" class="location-input" id="home-input" placeholder="Click map or enter address..."
-                value="">
-            <div class="location-coords" id="home-coords"></div>
+            <input type="text" class="location-input" id="home-input" placeholder="Click a zone on the map..." value=""
+                readonly>
+            <div class="location-status" id="home-status">Not set</div>
         </div>
 
         <div class="location-item" id="work-location">
             <div class="location-header">
                 <i class="ph-fill ph-briefcase"></i>
                 <span class="location-title">Work</span>
-                <button class="location-action" onclick="setActiveLocation('work')" title="Set on map">
+                <button class="location-action" onclick="setActiveLocation('work')" title="Select to set">
                     <i class="ph ph-crosshair"></i>
                 </button>
             </div>
-            <input type="text" class="location-input" id="work-input" placeholder="Click map or enter address..."
-                value="">
-            <div class="location-coords" id="work-coords"></div>
+            <input type="text" class="location-input" id="work-input" placeholder="Click a zone on the map..." value=""
+                readonly>
+            <div class="location-status" id="work-status">Not set</div>
         </div>
 
-        <div id="custom-locations-list"></div>
-
-        <button class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 10px;"
-            onclick="addCustomLocation()">
-            <i class="ph ph-plus"></i> Add Custom Location
-        </button>
+        <div class="location-help">
+            <i class="ph ph-info"></i>
+            <span>Click on different zones on the map to select standard locations for your home and work.</span>
+        </div>
     </div>
 </div>
 
@@ -107,8 +120,7 @@
         border: 1px solid rgba(255, 255, 255, 0.08);
         position: relative;
         overflow: hidden;
-        cursor: crosshair;
-        min-height: 300px;
+        min-height: 350px;
     }
 
     .map-grid {
@@ -121,6 +133,82 @@
         pointer-events: none;
     }
 
+    /* Location Zones - Clickable Areas */
+    .location-zone {
+        position: absolute;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .location-zone:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.05);
+        transform: scale(1.02);
+    }
+
+    .zone-label {
+        font-size: 11px;
+        font-weight: 500;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        line-height: 1.3;
+    }
+
+    .location-zone:hover .zone-label {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Zone Positions - Grid Layout */
+    .zone-residential {
+        top: 10%;
+        left: 10%;
+        width: 35%;
+        height: 25%;
+    }
+
+    .zone-downtown {
+        top: 10%;
+        right: 10%;
+        width: 35%;
+        height: 25%;
+    }
+
+    .zone-tech {
+        top: 40%;
+        left: 10%;
+        width: 35%;
+        height: 25%;
+    }
+
+    .zone-suburbs {
+        top: 40%;
+        right: 10%;
+        width: 35%;
+        height: 25%;
+    }
+
+    .zone-industrial {
+        bottom: 10%;
+        left: 10%;
+        width: 35%;
+        height: 25%;
+    }
+
+    .zone-uptown {
+        bottom: 10%;
+        right: 10%;
+        width: 35%;
+        height: 25%;
+    }
+
+    /* Map Markers */
     .map-marker {
         position: absolute;
         transform: translate(-50%, -100%);
@@ -129,12 +217,12 @@
         align-items: center;
         gap: 4px;
         animation: markerDrop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-        cursor: move;
         z-index: 10;
+        pointer-events: none;
     }
 
     .map-marker i {
-        font-size: 28px;
+        font-size: 32px;
         filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
     }
 
@@ -146,14 +234,10 @@
         color: var(--success);
     }
 
-    .custom-marker i {
-        color: var(--hud-alert);
-    }
-
     .marker-label {
-        font-size: 10px;
+        font-size: 11px;
         background: rgba(0, 0, 0, 0.8);
-        padding: 2px 8px;
+        padding: 3px 10px;
         border-radius: 4px;
         white-space: nowrap;
         font-weight: 500;
@@ -212,6 +296,7 @@
         font-size: 14px;
     }
 
+    /* Location List */
     .location-list {
         flex: 1;
         display: flex;
@@ -219,15 +304,6 @@
         gap: 12px;
         overflow-y: auto;
         padding-right: 5px;
-    }
-
-    .location-list::-webkit-scrollbar {
-        width: 4px;
-    }
-
-    .location-list::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
     }
 
     .location-item {
@@ -294,19 +370,38 @@
         font-family: var(--font-main);
         font-size: 12px;
         outline: none;
-        transition: 0.3s;
     }
 
-    .location-input:focus {
-        border-color: var(--accent-blue);
-        background: rgba(0, 0, 0, 0.5);
-    }
-
-    .location-coords {
+    .location-status {
         font-size: 10px;
         color: var(--text-secondary);
         margin-top: 4px;
-        font-family: monospace;
+        font-style: italic;
+    }
+
+    .location-status.set {
+        color: var(--success);
+    }
+
+    .location-help {
+        background: rgba(56, 189, 248, 0.05);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 8px;
+        padding: 10px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 11px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+        margin-top: auto;
+    }
+
+    .location-help i {
+        font-size: 14px;
+        color: var(--accent-blue);
+        flex-shrink: 0;
+        margin-top: 1px;
     }
 
     @keyframes markerDrop {
@@ -328,24 +423,60 @@
 
 <script>
     let activeLocationType = 'home';
-    let customLocationCount = 0;
     let locations = {
         home: null,
-        work: null,
-        custom: []
+        work: null
     };
 
-    // Initialize map click handler
-    document.getElementById('interactive-map').addEventListener('click', function (e) {
-        const rect = this.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+    // Predefined location data
+    const locationData = {
+        'home-1': {
+            name: 'Residential District',
+            address: '123 Maple Street, Greenwood Heights',
+            position: { x: 27.5, y: 22.5 }
+        },
+        'home-2': {
+            name: 'Suburban Area',
+            address: '456 Oak Avenue, Riverside Suburbs',
+            position: { x: 72.5, y: 52.5 }
+        },
+        'home-3': {
+            name: 'Uptown',
+            address: '789 Park Boulevard, Uptown District',
+            position: { x: 72.5, y: 82.5 }
+        },
+        'work-1': {
+            name: 'Downtown Business',
+            address: 'AeroSpace HQ, 100 Corporate Plaza, Downtown',
+            position: { x: 72.5, y: 22.5 }
+        },
+        'work-2': {
+            name: 'Tech Park',
+            address: 'Innovation Center, 200 Tech Drive, Silicon Valley',
+            position: { x: 27.5, y: 52.5 }
+        },
+        'work-3': {
+            name: 'Industrial Zone',
+            address: 'Manufacturing Hub, 300 Industry Road, East District',
+            position: { x: 27.5, y: 82.5 }
+        }
+    };
 
-        // Convert to percentage for responsive positioning
-        const xPercent = (x / rect.width) * 100;
-        const yPercent = (y / rect.height) * 100;
+    // Initialize zone click handlers
+    document.querySelectorAll('.location-zone').forEach(zone => {
+        zone.addEventListener('click', function () {
+            const locationId = this.getAttribute('data-location');
+            const locationType = locationId.startsWith('home') ? 'home' : 'work';
 
-        setLocationOnMap(activeLocationType, xPercent, yPercent);
+            // Only set if this is the active location type
+            if (locationType === activeLocationType) {
+                setLocation(locationId);
+            } else {
+                // Auto-switch to the appropriate type
+                setActiveLocation(locationType);
+                setTimeout(() => setLocation(locationId), 100);
+            }
+        });
     });
 
     function setActiveLocation(type) {
@@ -355,139 +486,55 @@
         document.querySelectorAll('.location-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.getElementById(`${type}-location`)?.classList.add('active');
+        document.getElementById(`${type}-location`).classList.add('active');
 
         // Update instructions
-        const typeNames = {
-            'home': 'Home',
-            'work': 'Work',
-            'custom': 'Custom'
+        const typeNames = { 'home': 'Home', 'work': 'Work' };
+        document.getElementById('current-location-type').textContent = typeNames[type];
+
+        updateAnnotation(`Click a zone on the map to set your ${typeNames[type]} location`, true);
+    }
+
+    function setLocation(locationId) {
+        const data = locationData[locationId];
+        if (!data) return;
+
+        const type = activeLocationType;
+        const marker = document.getElementById(`${type}-marker`);
+        const input = document.getElementById(`${type}-input`);
+        const status = document.getElementById(`${type}-status`);
+
+        // Position marker
+        marker.style.display = 'flex';
+        marker.style.left = data.position.x + '%';
+        marker.style.top = data.position.y + '%';
+
+        // Update input
+        input.value = data.address;
+
+        // Update status
+        status.textContent = `Set to ${data.name}`;
+        status.classList.add('set');
+
+        // Save location
+        locations[type] = {
+            id: locationId,
+            name: data.name,
+            address: data.address,
+            position: data.position
         };
-        document.getElementById('current-location-type').textContent = typeNames[type] || 'Custom';
 
-        updateAnnotation(`Click on the map to set your ${typeNames[type]} location`, true);
-    }
+        // Feedback
+        showHudAlert(`${type === 'home' ? 'Home' : 'Work'} location set`, '#00ff88');
+        speak(`${type === 'home' ? 'Home' : 'Work'} location set to ${data.name}.`);
 
-    function setLocationOnMap(type, xPercent, yPercent) {
-        let marker, input, coords;
-
-        if (type === 'home' || type === 'work') {
-            marker = document.getElementById(`${type}-marker`);
-            input = document.getElementById(`${type}-input`);
-            coords = document.getElementById(`${type}-coords`);
-
-            marker.style.display = 'flex';
-            marker.style.left = xPercent + '%';
-            marker.style.top = yPercent + '%';
-
-            // Generate mock address
-            const address = generateMockAddress(xPercent, yPercent, type);
-            input.value = address;
-            coords.textContent = `${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%`;
-
-            locations[type] = { x: xPercent, y: yPercent, address };
-
-            showHudAlert(`${type === 'home' ? 'Home' : 'Work'} location set`, '#00ff88');
-            speak(`${type === 'home' ? 'Home' : 'Work'} location saved.`);
-
-        } else if (type.startsWith('custom-')) {
-            // Handle custom location
-            const customId = type;
-            marker = document.getElementById(`marker-${customId}`);
-            input = document.getElementById(`input-${customId}`);
-            coords = document.getElementById(`coords-${customId}`);
-
-            if (marker) {
-                marker.style.left = xPercent + '%';
-                marker.style.top = yPercent + '%';
-                marker.style.display = 'flex';
-
-                const address = generateMockAddress(xPercent, yPercent, 'custom');
-                input.value = address;
-                coords.textContent = `${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%`;
-
-                // Update locations array
-                const customIndex = locations.custom.findIndex(loc => loc.id === customId);
-                if (customIndex >= 0) {
-                    locations.custom[customIndex] = { id: customId, x: xPercent, y: yPercent, address };
-                }
-
-                showHudAlert('Custom location set', '#00ff88');
-            }
+        // Auto-switch to work if home was just set
+        if (type === 'home' && !locations.work) {
+            setTimeout(() => {
+                setActiveLocation('work');
+                speak('Now select your work location.');
+            }, 1000);
         }
-    }
-
-    function generateMockAddress(x, y, type) {
-        const streets = ['Main St', 'Oak Ave', 'Maple Dr', 'Pine Rd', 'Cedar Ln', 'Elm St', 'Park Blvd'];
-        const cities = ['Techville', 'Innovation City', 'Future Town', 'Metro Heights'];
-
-        const streetNum = Math.floor(100 + (x * 50));
-        const street = streets[Math.floor((x + y) / 30) % streets.length];
-        const city = cities[Math.floor(y / 25) % cities.length];
-
-        return `${streetNum} ${street}, ${city}`;
-    }
-
-    function addCustomLocation() {
-        customLocationCount++;
-        const customId = `custom-${customLocationCount}`;
-
-        // Add to locations array
-        locations.custom.push({ id: customId, x: null, y: null, address: '' });
-
-        // Add marker to map
-        const marker = document.createElement('div');
-        marker.id = `marker-${customId}`;
-        marker.className = 'map-marker custom-marker';
-        marker.style.display = 'none';
-        marker.innerHTML = `
-        <i class="ph-fill ph-map-pin"></i>
-        <span class="marker-label">Custom ${customLocationCount}</span>
-    `;
-        document.getElementById('custom-markers').appendChild(marker);
-
-        // Add to location list
-        const locationItem = document.createElement('div');
-        locationItem.className = 'location-item';
-        locationItem.id = `${customId}-location`;
-        locationItem.innerHTML = `
-        <div class="location-header">
-            <i class="ph-fill ph-map-pin"></i>
-            <span class="location-title">Custom Location ${customLocationCount}</span>
-            <button class="location-action" onclick="setActiveLocation('${customId}')" title="Set on map">
-                <i class="ph ph-crosshair"></i>
-            </button>
-            <button class="location-action" onclick="removeCustomLocation('${customId}')" title="Remove" style="color: var(--danger);">
-                <i class="ph ph-trash"></i>
-            </button>
-        </div>
-        <input type="text" class="location-input" id="input-${customId}" placeholder="Click map or enter address...">
-        <div class="location-coords" id="coords-${customId}"></div>
-    `;
-        document.getElementById('custom-locations-list').appendChild(locationItem);
-
-        // Auto-select this location
-        setActiveLocation(customId);
-
-        updateAnnotation(`Custom location ${customLocationCount} added - click on map to set position`, true);
-    }
-
-    function removeCustomLocation(customId) {
-        // Remove from locations array
-        locations.custom = locations.custom.filter(loc => loc.id !== customId);
-
-        // Remove marker
-        document.getElementById(`marker-${customId}`)?.remove();
-
-        // Remove from list
-        document.getElementById(`${customId}-location`)?.remove();
-
-        // Reset to home if this was active
-        if (activeLocationType === customId) {
-            setActiveLocation('home');
-        }
-
-        updateAnnotation('Custom location removed', true);
     }
 
     function saveLocations() {
@@ -498,7 +545,7 @@
             return;
         }
 
-        // Save to localStorage or session
+        // Save to localStorage
         localStorage.setItem('aerodrive_locations', JSON.stringify(locations));
 
         showHudAlert('Locations saved', '#00ff88');
@@ -507,6 +554,9 @@
         // Update HUD progress
         const progressFill = document.getElementById('hud-progress-fill');
         if (progressFill) progressFill.style.width = '50%';
+
+        const contextLabel = document.getElementById('hud-context-label');
+        if (contextLabel) contextLabel.textContent = 'NAV: CONFIGURED';
 
         setTimeout(() => loadStep(4), 800);
     }
