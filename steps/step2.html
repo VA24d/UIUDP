@@ -45,7 +45,7 @@
         <div class="comfort-extras">
             <div class="extra-row">
                 <i class="ph ph-thermometer-simple"></i>
-                <span>Climate</span>
+                <span>Climate Control</span>
                 <div class="temp-control">
                     <button class="adj-btn" onclick="changeTemp(-1)"><i class="ph ph-minus"></i></button>
                     <span id="temp-display">72°F</span>
@@ -54,13 +54,13 @@
             </div>
             <div class="extra-row">
                 <i class="ph ph-lamp"></i>
-                <span>Ambient</span>
+                <span>Interior Lighting</span>
                 <div class="color-picker">
-                    <div class="color-dot active" style="background:#0088ff;" onclick="pickColor(this)"></div>
-                    <div class="color-dot" style="background:#b300ff;" onclick="pickColor(this)"></div>
-                    <div class="color-dot" style="background:#ff3366;" onclick="pickColor(this)"></div>
-                    <div class="color-dot" style="background:#00ff88;" onclick="pickColor(this)"></div>
-                    <div class="color-dot" style="background:#ffb800;" onclick="pickColor(this)"></div>
+                    <div class="color-dot active" style="background: #38bdf8;" data-ambient="#38bdf8" onclick="pickColor(this)"></div>
+                    <div class="color-dot" style="background: #a855f7;" data-ambient="#a855f7" onclick="pickColor(this)"></div>
+                    <div class="color-dot" style="background: #f43f5e;" data-ambient="#f43f5e" onclick="pickColor(this)"></div>
+                    <div class="color-dot" style="background: #10b981;" data-ambient="#10b981" onclick="pickColor(this)"></div>
+                    <div class="color-dot" style="background: #f59e0b;" data-ambient="#f59e0b" onclick="pickColor(this)"></div>
                 </div>
             </div>
         </div>

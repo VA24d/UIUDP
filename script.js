@@ -3,6 +3,12 @@ let profileSubStep = 0;
 let isListening = false;
 let recognition = null;
 let awaitingName = false; // Flag: are we waiting for the user to say their name?
+let faceCameraStream = null;
+/** While on face sub-step, voice "next" is ignored until the scan animation finishes (avoids double-fire / TTS echo skipping the camera). */
+let faceRegistrationComplete = true;
+let faceScanTimeoutIds = [];
+/** Ignore voice navigation briefly after TTS ends (reduces speaker→mic "next" false triggers). */
+let navBlockedUntil = 0;
 
 // ═══════════════════════════════════════════
 //  SPEECH SYNTHESIS (TTS) — Car talks to you
@@ -31,8 +37,13 @@ function speak(text) {
     if (bar && textEl) {
         textEl.textContent = text;
         bar.classList.add('speaking');
-        u.onend = () => bar.classList.remove('speaking');
     }
+    const clearSpeaking = () => {
+        if (bar) bar.classList.remove('speaking');
+        navBlockedUntil = Date.now() + 900;
+    };
+    u.onend = clearSpeaking;
+    u.onerror = clearSpeaking;
     window.speechSynthesis.speak(u);
 }
 
@@ -160,17 +171,27 @@ function handleVoiceCommand(transcript, isFinal) {
     const navBack = ['back', 'previous', 'go back', 'return'];
     const navComplete = ['complete', 'finish', 'done', 'finalize'];
 
-    if (fuzzyMatch(words, navNext)) {
+    const matchedNext = fuzzyMatch(words, navNext);
+    const matchedBack = fuzzyMatch(words, navBack);
+    const matchedComplete = fuzzyMatch(words, navComplete);
+    const wantsFwdNav = !!(matchedNext || matchedComplete);
+
+    if ((wantsFwdNav || matchedBack) && now < navBlockedUntil) return false;
+    const faceGate =
+        currentStep === 1 && profileSubStep === 1 && !faceRegistrationComplete;
+    if (faceGate && wantsFwdNav) return false;
+
+    if (matchedNext) {
         lastCommandTime = now;
         triggerNext();
         return true;
     }
-    if (fuzzyMatch(words, navBack)) {
+    if (matchedBack) {
         lastCommandTime = now;
         if (currentStep > 1) loadStep(currentStep - 1);
         return true;
     }
-    if (fuzzyMatch(words, navComplete)) {
+    if (matchedComplete) {
         lastCommandTime = now;
         if (currentStep === 6) { completeSetup(); return true; }
         triggerNext();
@@ -229,9 +250,94 @@ function triggerNext() {
 }
 
 // ═══════════════════════════════════════════
+//  FACE CAMERA (step 1 sub-step — live preview)
+// ═══════════════════════════════════════════
+function resetFaceScannerUI() {
+    const sc = document.getElementById('face-scanner');
+    const vid = document.getElementById('face-video');
+    const ph = document.getElementById('face-placeholder');
+    if (!sc) return;
+    sc.classList.remove('face-done', 'scanning', 'face-preview-live', 'face-preview-playing', 'face-preview-error');
+    sc.style.borderColor = '';
+    if (vid) vid.classList.remove('active');
+    if (ph) ph.style.display = 'block';
+    showFaceCameraHint('');
+}
+
+function stopFaceCamera() {
+    const video = document.getElementById('face-video');
+    const scanner = document.getElementById('face-scanner');
+    if (faceCameraStream) {
+        faceCameraStream.getTracks().forEach((t) => t.stop());
+        faceCameraStream = null;
+    }
+    if (video) video.srcObject = null;
+    if (scanner) {
+        scanner.classList.remove('face-preview-live', 'face-preview-playing', 'face-preview-error');
+        const vidEl = document.getElementById('face-video');
+        if (vidEl) vidEl.classList.remove('active');
+    }
+    showFaceCameraHint('');
+}
+
+function clearFaceScanTimeouts() {
+    faceScanTimeoutIds.forEach((id) => clearTimeout(id));
+    faceScanTimeoutIds = [];
+}
+
+/** In-scanner status; clears when message is empty. */
+function showFaceCameraHint(message, isError = false) {
+    const hint = document.getElementById('face-status');
+    const scanner = document.getElementById('face-scanner');
+    if (!hint) return;
+    if (!message) {
+        hint.textContent = 'Position your face within the circle.';
+        scanner?.classList.remove('face-preview-error');
+        return;
+    }
+    hint.textContent = message;
+    if (isError) scanner?.classList.add('face-preview-error');
+    else scanner?.classList.remove('face-preview-error');
+}
+
+async function startFaceCamera() {
+    stopFaceCamera();
+    const video = document.getElementById('face-video');
+    const scanner = document.getElementById('face-scanner');
+    const ph = document.getElementById('face-placeholder');
+    if (!video) return false;
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+        const msg = 'No camera API — use https.';
+        showFaceCameraHint(msg, true);
+        return false;
+    }
+
+    showFaceCameraHint('Requesting camera access...', false);
+
+    try {
+        faceCameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        video.srcObject = faceCameraStream;
+        video.classList.add('active');
+        if (ph) ph.style.display = 'none';
+        scanner?.classList.add('face-preview-live');
+        return true;
+    } catch (e) {
+        console.warn('Camera blocked:', e);
+        showFaceCameraHint('Camera access denied.', true);
+        return false;
+    }
+}
+
+// ═══════════════════════════════════════════
 //  STEP LOADER
 // ═══════════════════════════════════════════
 async function loadStep(n) {
+    stopFaceCamera();
+    clearFaceScanTimeouts();
+    faceRegistrationComplete = true;
+    document.body.classList.remove('cabin-comfort-step');
+    document.documentElement.style.removeProperty('--cabin-voice-accent');
     try {
         const url = n === 7 ? 'steps/success.html' : `steps/step${n}.html`;
         const res = await fetch(url);
@@ -241,23 +347,32 @@ async function loadStep(n) {
         c.style.animation = 'none'; c.offsetHeight;
         c.innerHTML = html; c.style.animation = null;
         currentStep = n;
+        // Reset simulation attempt if entering Step 5
+        if (n === 5) simAttempt = 1;
         updateNav(n);
         updateHudContext(n);
         initStepLogic(n);
+        if (n === 2) {
+            document.body.classList.add('cabin-comfort-step');
+            syncCabinVoiceAccentFromUI();
+        }
         if (voiceMessages[n]) speak(voiceMessages[n]);
     } catch (e) { console.error(e); }
 }
 
 // ── HUD Context — dynamic per-step feedback ──
 const hudContextMap = {
-    1: { label: 'PROFILE: SETTING UP', progress: 16, warning: false },
-    2: { label: 'CABIN: CALIBRATING', progress: 33, warning: false },
-    3: { label: 'NAV: CONFIGURING', progress: 50, warning: false },
-    4: { label: 'LEARNING: REVIEW', progress: 66, warning: false },
-    5: { label: '⚠ TAKE-OVER DRILL', progress: 83, warning: true },
-    6: { label: 'TUNING: PREFERENCES', progress: 95, warning: false },
-    7: { label: '✓ SETUP COMPLETE', progress: 100, warning: false }
+    1: { label: 'PROFILE: SETTING UP', progress: 16, warning: false, annotation: 'Simulating: Driver identity verification and biometric setup' },
+    2: { label: 'CABIN: CALIBRATING', progress: 33, warning: false, annotation: 'Simulating: Ergonomic seat adjustment and cabin environment setup' },
+    3: { label: 'NAV: CONFIGURING', progress: 50, warning: false, annotation: 'Simulating: Route planning and location preset configuration' },
+    4: { label: 'LEARNING: REVIEW', progress: 66, warning: false, annotation: 'Simulating: Interactive system capability overview' },
+    5: { label: '⚠ TAKE-OVER DRILL', progress: 83, warning: true, annotation: 'Simulating: Unmapped road zone detected — autonomous system requesting driver takeover' },
+    6: { label: 'TUNING: PREFERENCES', progress: 95, warning: false, annotation: 'Simulating: Drive profile and AI behavioral tuning' },
+    7: { label: '✓ SETUP COMPLETE', progress: 100, warning: false, annotation: 'Simulation complete: AeroDrive is ready for operation' }
 };
+
+let defaultAnnotation = '';
+let annotationTimer = null;
 
 function updateHudContext(step) {
     const ctx = hudContextMap[step];
@@ -272,6 +387,29 @@ function updateHudContext(step) {
         fill.style.width = ctx.progress + '%';
         fill.classList.toggle('warning', ctx.warning);
     }
+    updateAnnotation(ctx.annotation);
+}
+
+function updateAnnotation(text, isAction = false) {
+    const el = document.getElementById('cockpit-annotation');
+    if (!el) return;
+    
+    if (isAction) {
+        if (annotationTimer) clearTimeout(annotationTimer);
+        el.textContent = 'Action: ' + text;
+        el.classList.add('action-msg');
+        annotationTimer = setTimeout(() => {
+            el.textContent = defaultAnnotation;
+            el.classList.remove('action-msg');
+            annotationTimer = null;
+        }, 3000);
+    } else {
+        defaultAnnotation = text;
+        if (!annotationTimer) {
+            el.textContent = text;
+            el.classList.remove('action-msg');
+        }
+    }
 }
 
 function updateNav(step) {
@@ -280,7 +418,7 @@ function updateNav(step) {
         if (i < step - 1) li.classList.add('completed');
         else li.classList.remove('completed');
     });
-    const el = document.getElementById(`nav-${step}`);
+    const el = document.getElementById(`nav-step-${step}`);
     if (el) el.classList.add('active');
 }
 
@@ -307,6 +445,8 @@ function initStepLogic(step) {
 // ═══════════════════════════════════════════
 function initProfile() {
     profileSubStep = 0;
+    faceRegistrationComplete = true;
+    clearFaceScanTimeouts();
     const mic = document.getElementById('mic-ring');
     if (mic) mic.addEventListener('click', startNameCapture);
 }
@@ -354,32 +494,52 @@ function finishNameCapture(name) {
     document.getElementById('input-display').value = displayName;
     document.querySelector('.voice-label').textContent = `Heard: "${name}"`;
     showHudAlert('Voice Recognized', '#00ff88');
+    
+    // Update HUD with profile status
+    const label = document.getElementById('hud-context-label');
+    if (label) label.textContent = 'PROFILE: NAME CAPTURED';
+
     speak(`Nice to meet you, ${displayName}. You can edit your display name, then say next.`);
 }
 
 function advanceProfileSetup() {
     const nameEl = document.getElementById('setup-name'), face = document.getElementById('setup-face'), voice = document.getElementById('setup-voice');
     const dots = document.querySelectorAll('.step-dot'), btn = document.getElementById('btn-next-1');
+    if (currentStep === 1 && profileSubStep === 1 && !faceRegistrationComplete) return;
     profileSubStep++;
     if (profileSubStep === 1) {
-        nameEl.classList.add('hidden'); face.classList.remove('hidden');
+        nameEl.classList.add('hidden'); nameEl.classList.remove('active');
+        face.classList.remove('hidden'); face.classList.add('active');
         dots[0].classList.replace('active', 'done'); dots[1].classList.add('active');
         showHudAlert('Profile Name Saved', '#00ff88');
-        speak("Now let's register your face. Please look at the display.");
-        setTimeout(() => {
+        speak("Now let's register your face. Please allow camera access and position your face within the circle.");
+        
+        void (async () => {
+            const success = await startFaceCamera();
             const sc = document.getElementById('face-scanner');
             if (sc) {
                 sc.classList.add('scanning');
                 setTimeout(() => {
                     sc.classList.remove('scanning'); sc.style.borderColor = '#00ff88';
-                    sc.innerHTML = '<i class="ph-fill ph-check-circle" style="color:#00ff88;font-size:36px;"></i>';
+                    const check = document.createElement('div');
+                    check.innerHTML = '<i class="ph-fill ph-check-circle" style="color:#00ff88;font-size:48px;position:absolute;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);"></i>';
+                    sc.appendChild(check);
                     showHudAlert('Face Registered', '#00ff88');
+                    const label = document.getElementById('hud-context-label');
+                    if (label) label.textContent = 'PROFILE: BIOMETRIC OK';
+                    updateAnnotation('Biometric registration complete', true);
                     speak("Face registered. Say next for voice profile setup.");
-                }, 2000);
+                    if (!success) {
+                        const ph = document.getElementById('face-placeholder');
+                        if (ph) ph.innerHTML = '<i class="ph-fill ph-check-circle" style="color:#00ff88;"></i>';
+                    }
+                }, 3000);
             }
-        }, 400);
+        })();
     } else if (profileSubStep === 2) {
-        face.classList.add('hidden'); voice.classList.remove('hidden');
+        stopFaceCamera();
+        face.classList.add('hidden'); face.classList.remove('active');
+        voice.classList.remove('hidden'); voice.classList.add('active');
         dots[1].classList.replace('active', 'done'); dots[2].classList.add('active');
         btn.textContent = 'Complete Profile';
         speak("Please say: Hey AeroDrive, take me home.");
@@ -401,7 +561,17 @@ let seatValues = { headrest: 5, backrest: 5, lumbar: 5, cushion: 5 };
 let seatTilts = { headrest: 0, backrest: 0, lumbar: 0, cushion: 0 };
 let activeZone = null;
 
-function initComfort() { activeZone = null; }
+function syncCabinVoiceAccentFromUI() {
+    const active = document.querySelector('#adjust-panel .color-dot.active, .comfort-layout .color-dot.active');
+    if (!active || currentStep !== 2) return;
+    const hex = active.getAttribute('data-ambient');
+    if (hex) document.documentElement.style.setProperty('--cabin-voice-accent', hex);
+}
+
+function initComfort() {
+    activeZone = null;
+    syncCabinVoiceAccentFromUI();
+}
 
 function selectZone(zone) {
     activeZone = zone;
@@ -412,6 +582,12 @@ function selectZone(zone) {
     document.getElementById('zone-controls').classList.remove('hidden');
     document.getElementById('adj-val').textContent = seatValues[zone];
     document.getElementById('tilt-val').textContent = seatTilts[zone] + '°';
+    
+    // Update HUD with active zone
+    const label = document.getElementById('hud-context-label');
+    if (label) label.textContent = `CABIN: ${zone.toUpperCase()}`;
+
+    updateAnnotation(`Accessing ${zone} motors...`, true);
     speak(`${zone} selected. Use buttons to adjust height and tilt.`);
     updateSeatVisual();
 }
@@ -420,6 +596,7 @@ function adjustSeat(dir) {
     if (!activeZone) return;
     seatValues[activeZone] = Math.max(1, Math.min(10, seatValues[activeZone] + dir));
     document.getElementById('adj-val').textContent = seatValues[activeZone];
+    updateAnnotation(`Adjusting ${activeZone} height - mechanical actuators positioning...`, true);
     updateSeatVisual();
 }
 
@@ -427,6 +604,7 @@ function adjustTilt(dir) {
     if (!activeZone) return;
     seatTilts[activeZone] = Math.max(-15, Math.min(15, seatTilts[activeZone] + dir * 3));
     document.getElementById('tilt-val').textContent = seatTilts[activeZone] + '°';
+    updateAnnotation(`Updating ${activeZone} tilt angle - ergonomic optimization active`, true);
     updateSeatVisual();
 }
 
@@ -442,11 +620,17 @@ let tempValue = 72;
 function changeTemp(dir) {
     tempValue = Math.max(60, Math.min(85, tempValue + dir));
     document.getElementById('temp-display').textContent = tempValue + '°F';
+    updateAnnotation(`HVAC system recalibrating to ${tempValue}°F - zones syncing...`, true);
 }
 
 function pickColor(el) {
     document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
     el.classList.add('active');
+    const hex = el.getAttribute('data-ambient');
+    if (hex && currentStep === 2) {
+        document.documentElement.style.setProperty('--cabin-voice-accent', hex);
+    }
+    updateAnnotation(`Interior ambient lighting spectrum updated - cabin mood synced`, true);
 }
 
 // ═══ Step 4: Learn — Slideshow ═══
@@ -468,6 +652,12 @@ function initLearn() {
 function goSlide(n) {
     currentSlide = n;
     updateSlideUI();
+    
+    // Update HUD with slide info
+    const slides = ['CAPABILITIES', 'SAFETY', 'CHARGING', 'TAKE-OVER'];
+    const label = document.getElementById('hud-context-label');
+    if (label) label.textContent = `LEARN: ${slides[n-1]}`;
+
     if (slideVoice[n]) speak(slideVoice[n]);
 }
 
@@ -595,20 +785,23 @@ function initSimulation() {
         }, 1000);
     }, 3000);
 
-    // Hold button logic
+    // Hold button logic — FIX: Clone element to clear previous listeners
     if (btnHold && fill) {
+        const newBtn = btnHold.cloneNode(true);
+        btnHold.parentNode.replaceChild(newBtn, btnHold);
+        
         const start = () => {
-            if (btnHold.classList.contains('secured')) return;
-            btnHold.classList.add('holding');
+            if (newBtn.classList.contains('secured')) return;
+            newBtn.classList.add('holding');
             holdTimer = setInterval(() => {
                 progress += 4;
                 fill.style.width = progress + '%';
                 if (progress >= 100) {
                     clearInterval(holdTimer);
                     clearInterval(simCountdownTimer);
-                    btnHold.classList.remove('holding');
-                    btnHold.classList.add('secured');
-                    btnHold.querySelector('span').innerHTML = '<i class="ph-fill ph-check-circle" style="margin-right:6px;"></i> CONTROL SECURED';
+                    newBtn.classList.remove('holding');
+                    newBtn.classList.add('secured');
+                    newBtn.querySelector('span').innerHTML = '<i class="ph-fill ph-check-circle" style="margin-right:6px;"></i> CONTROL SECURED';
                     
                     // Calculate response time
                     const responseTime = ((Date.now() - simStartTime) / 1000).toFixed(1);
@@ -621,6 +814,11 @@ function initSimulation() {
                         document.getElementById('response-time').textContent = responseTime;
                         if (btnNext) btnNext.disabled = false;
                         showHudAlert('Override Successful', '#10B981');
+                        
+                        // Update HUD on success
+                        const label = document.getElementById('hud-context-label');
+                        if (label) label.textContent = 'TAKE-OVER: SECURED';
+
                         speak(`Excellent! You took over in ${responseTime} seconds. You're ready for the road.`);
                     }, 500);
                 }
@@ -629,16 +827,16 @@ function initSimulation() {
         const stop = () => {
             if (progress < 100) {
                 clearInterval(holdTimer);
-                btnHold.classList.remove('holding');
+                newBtn.classList.remove('holding');
                 progress = 0;
                 fill.style.width = '0%';
             }
         };
-        btnHold.addEventListener('mousedown', start);
-        btnHold.addEventListener('mouseup', stop);
-        btnHold.addEventListener('mouseleave', stop);
-        btnHold.addEventListener('touchstart', e => { e.preventDefault(); start(); });
-        btnHold.addEventListener('touchend', stop);
+        newBtn.addEventListener('mousedown', start);
+        newBtn.addEventListener('mouseup', stop);
+        newBtn.addEventListener('mouseleave', stop);
+        newBtn.addEventListener('touchstart', e => { e.preventDefault(); start(); });
+        newBtn.addEventListener('touchend', stop);
     }
 }
 
@@ -668,6 +866,13 @@ function setAccel(val) {
     // HUD sync
     const bar = document.getElementById('hud-accel-bar');
     if (bar) bar.style.width = (val * 33.3) + '%';
+    
+    if (val === 3) {
+        updateAnnotation('Dynamic Mode: Adaptive bolsters and active seat tilting enabled for G-force simulation', true);
+    } else {
+        updateAnnotation('Drive Profile updated - throttle and braking response smoothed', true);
+    }
+
     speak(['Smooth acceleration selected. Gentle and relaxed.', 'Standard acceleration. Balanced response.', 'Dynamic mode engaged. Seat bolsters will tighten during acceleration.'][val-1]);
 }
 
@@ -676,6 +881,7 @@ function setDist(val) {
     updateOptionButtons('tune-dist', val);
     document.getElementById('val-dist').textContent = ['Close','Medium','Far'][val-1];
     updateTunePreview();
+    updateAnnotation(`Following distance recalibrated to ${['25m', '35m', '45m'][val-1]} safety margin`, true);
     // HUD sync
     const d = document.getElementById('hud-dist-dots');
     if (d) { let h = ''; for (let i = 0; i < 3; i++) h += `<div class="dot ${i < val ? 'active' : ''}"></div>`; d.innerHTML = h; }
@@ -686,6 +892,7 @@ function setLane(val) {
     updateOptionButtons('tune-lane', val);
     document.getElementById('val-lane').textContent = ['Left','Center','Right'][val-1];
     updateTunePreview();
+    updateAnnotation(`Lane centering preference shifted to ${['left', 'center', 'right'][val-1]} bias`, true);
 }
 
 function updateOptionButtons(cardId, activeVal) {

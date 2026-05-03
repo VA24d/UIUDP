@@ -25,10 +25,15 @@
     <!-- Sub-step 2: Face Registration -->
     <div class="setup-step hidden" id="setup-face">
         <div class="scanner" id="face-scanner">
+            <video id="face-preview" class="face-preview-video" autoplay playsinline webkit-playsinline muted disablepictureinpicture></video>
+            <div class="face-camera-hint" id="face-camera-hint" aria-live="polite" hidden></div>
             <div class="scan-line"></div>
-            <i class="ph ph-user-focus"></i>
+            <div class="face-scanner-front" id="face-scanner-front">
+                <i class="ph ph-user-focus"></i>
+            </div>
         </div>
-        <p style="text-align:center; color: var(--text-secondary); font-size: 14px;">Look at the display to register your face.</p>
+        <p style="text-align:center; color: #fff; font-size: 14px; margin-bottom: 5px;">Position your face within the circle.</p>
+        <p style="text-align:center; color: var(--text-secondary); font-size: 12px;">Look at the display to register your biometric ID.</p>
     </div>
 
     <!-- Sub-step 3: Voice Profile -->
