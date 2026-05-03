@@ -1,0 +1,336 @@
+@startuml AeroDrive Onboarding Task Flow
+!theme plain
+skinparam backgroundColor #0a0c10
+skinparam defaultFontColor #F8FAFC
+skinparam defaultFontName Inter
+skinparam activityBackgroundColor #1A1D24
+skinparam activityBorderColor #38BDF8
+skinparam activityFontColor #F8FAFC
+skinparam activityStartColor #10B981
+skinparam activityEndColor #EF4444
+skinparam activityDiamondBackgroundColor #1A1D24
+skinparam activityDiamondBorderColor #FBBF24
+skinparam arrowColor #38BDF8
+skinparam noteBorderColor #38BDF8
+skinparam noteBackgroundColor #13151a
+
+title AeroDrive First-Time Setup - Onboarding Flow
+
+start
+
+:System Initializes;
+note right
+  • Load UI components
+  • Initialize voice engine
+  • Check browser compatibility
+  • Set up event listeners
+end note
+
+:Display Welcome Screen;
+
+:**STEP 1: Profile Creation**;
+note right
+  **Sub-steps:**
+  1. Voice name capture
+  2. Face registration
+  3. Voice profile setup
+end note
+
+:User taps microphone icon;
+
+:System activates voice recognition;
+
+:User speaks their name;
+
+:System captures and processes name;
+
+:Display name in input fields;
+
+:User confirms or edits name;
+
+:Advance to face registration;
+
+if (Camera available?) then (yes)
+  :Request camera permission;
+  :Start video preview;
+  :Simulate face scan (3 seconds);
+  :Display checkmark confirmation;
+else (no)
+  :Show placeholder icon;
+  :Simulate scan without camera;
+endif
+
+:Advance to voice profile;
+
+:User speaks test phrase;
+note right
+  "Hey AeroDrive, take me home"
+end note
+
+:System records voice pattern;
+
+:Display voice wave animation;
+
+:Show completion checkmark;
+
+:Save profile data;
+
+:Update HUD: "PROFILE: NAME CAPTURED";
+
+:Progress to Step 2;
+
+:**STEP 2: Comfort Settings**;
+note right
+  **Interactive seat adjustment**
+  • Headrest
+  • Backrest
+  • Lumbar
+  • Cushion
+  • Temperature
+  • Ambient lighting
+end note
+
+:Display seat visualization;
+
+:User selects seat zone;
+
+:Highlight selected zone;
+
+:Show adjustment controls;
+
+while (User adjusting?) is (yes)
+  :User clicks +/- buttons;
+  :Update seat position values;
+  :Animate seat visual;
+  :Update HUD metrics;
+endwhile (done)
+
+:User adjusts temperature;
+
+:User selects ambient color;
+
+:Save comfort preferences;
+
+:Update HUD: "CABIN: CALIBRATED";
+
+:Progress to Step 3;
+
+:**STEP 3: Location Presets**;
+note right
+  **Map-based selection**
+  • Home (required)
+  • Work (optional)
+  • Visual zone selection
+end note
+
+:Display interactive map;
+
+:Set Home as active location;
+
+:User clicks map zone;
+
+if (Zone type matches active?) then (yes)
+  :Place marker on map;
+  :Auto-fill address;
+  :Update status: "Set to [Zone]";
+  :Show HUD alert;
+  :Play voice confirmation;
+else (no)
+  :Auto-switch to correct type;
+  :Place marker;
+  :Update address;
+endif
+
+if (Home location set?) then (no)
+  :Keep Home active;
+  :Show instruction;
+else (yes)
+  :Auto-switch to Work;
+  :Prompt for work location;
+endif
+
+:User clicks work zone (optional);
+
+:Place work marker;
+
+:Update work address;
+
+:User clicks "Save & Continue";
+
+if (Home location set?) then (no)
+  :Show error message;
+  :Play voice: "Set home first";
+  :Return to map;
+  stop
+else (yes)
+  :Save locations to localStorage;
+  :Update HUD: "NAV: CONFIGURED";
+  :Progress to Step 4;
+endif
+
+:**STEP 4: Learn System**;
+note right
+  **Educational slideshow**
+  • Capabilities
+  • Safety features
+  • Charging info
+  • Take-over protocol (critical)
+end note
+
+:Display Slide 1: Capabilities;
+
+:Show what car CAN/CAN'T do;
+
+:User clicks "Next" or says "next";
+
+:Display Slide 2: Safety Shield;
+
+:Show sensor ring animation;
+
+:List safety features;
+
+:User advances;
+
+:Display Slide 3: Charging;
+
+:Show battery visualization;
+
+:Display range statistics;
+
+:User advances;
+
+:Display Slide 4: Take-Over (CRITICAL);
+note right
+  **Most important slide**
+  • 10-second warning
+  • Squeeze wheel to confirm
+  • Failsafe if no response
+end note
+
+:Show take-over timeline;
+
+:Display countdown preview;
+
+:Emphasize critical nature;
+
+:User acknowledges understanding;
+
+:Update HUD: "LEARNING: REVIEW";
+
+:Progress to Step 5;
+
+:**STEP 5: Take-Over Simulation**;
+note right
+  **Hands-on practice**
+  • Simulated scenario
+  • Real-time countdown
+  • Physical interaction required
+end note
+
+:Display simulation screen;
+
+:Show autonomous driving (3s);
+
+:Trigger warning scenario;
+
+:Display modal: "TAKE MANUAL CONTROL";
+
+:Show countdown: 10 seconds;
+
+:Display steering wheel button;
+
+:HUD shows: "EYES ON ROAD";
+
+:Play warning chime;
+
+:Amber strobe effect;
+
+while (Countdown > 0 AND not gripped?) is (yes)
+  :Decrement countdown;
+  :Update timer display;
+  if (Countdown <= 3?) then (yes)
+    :Increase urgency;
+    :Red strobe;
+    :Larger timer;
+  endif
+endwhile (gripped OR timeout)
+
+if (User gripped wheel?) then (yes)
+  :Stop countdown;
+  :Play success chime;
+  :Calculate response time;
+  :Display: "CONTROL SECURED";
+  :Show response time;
+  :Enable "Next" button;
+  :Voice: "Excellent! Ready for road";
+else (timeout)
+  :Display failsafe stage;
+  :Show: "Failsafe Engaged";
+  :Explain hazard stop procedure;
+  :Voice: "Let's practice again";
+  :Reset simulation;
+  :Increment attempt counter;
+  stop
+endif
+
+:Update HUD: "TAKE-OVER: SECURED";
+
+:Progress to Step 6;
+
+:**STEP 6: Drive Tuning**;
+note right
+  **Personalize AI behavior**
+  • Acceleration profile
+  • Following distance
+  • Lane positioning
+  • Visual preview
+end note
+
+:Display tuning interface;
+
+:Show road preview visualization;
+
+:User selects acceleration;
+
+while (User tuning?) is (yes)
+  if (Setting changed?) then (yes)
+    :Update preview animation;
+    :Adjust lead car distance;
+    :Update bolster indicators;
+    :Sync HUD metrics;
+  endif
+endwhile (done)
+
+:User clicks "Complete" or "Finish";
+
+:Save all tuning preferences;
+
+:Update HUD: "TUNING: PREFERENCES";
+
+:Progress to Step 7;
+
+:**STEP 7: Setup Complete**;
+note right
+  **Success screen**
+  • Confirmation message
+  • Restart demo option
+  • All systems calibrated
+end note
+
+:Display success animation;
+
+:Show green checkmark;
+
+:Display: "You're All Set";
+
+:Voice: "AeroDrive calibrated to you";
+
+:Update HUD: "✓ SETUP COMPLETE";
+
+:Show "Restart Demo" button;
+
+:Mark all nav items as completed;
+
+stop
+
+@enduml

@@ -1,0 +1,299 @@
+@startuml AeroDrive System Initialization Flow
+!theme plain
+skinparam backgroundColor #0a0c10
+skinparam defaultFontColor #F8FAFC
+skinparam defaultFontName Inter
+skinparam activityBackgroundColor #1A1D24
+skinparam activityBorderColor #38BDF8
+skinparam activityFontColor #F8FAFC
+skinparam activityStartColor #10B981
+skinparam activityEndColor #EF4444
+skinparam activityDiamondBackgroundColor #1A1D24
+skinparam activityDiamondBorderColor #FBBF24
+skinparam arrowColor #38BDF8
+skinparam noteBorderColor #38BDF8
+skinparam noteBackgroundColor #13151a
+
+title AeroDrive System - Local Initialization & Startup
+
+|Browser|
+start
+
+:User opens index.html;
+
+:Browser loads HTML;
+
+:Parse DOM structure;
+
+|System|
+:**Load External Resources**;
+
+fork
+  :Load Inter font from Google Fonts;
+fork again
+  :Load Phosphor Icons library;
+fork again
+  :Load style.css;
+fork again
+  :Load script.js;
+end fork
+
+:Wait for all resources;
+
+if (All resources loaded?) then (no)
+  :Show loading error;
+  :Fallback to system fonts;
+  note right
+    Graceful degradation
+    if CDN unavailable
+  end note
+else (yes)
+  :Continue initialization;
+endif
+
+:**DOM Ready Event**;
+
+:Execute window.onload;
+
+|Voice Engine|
+:**Initialize Speech Recognition**;
+
+if (SpeechRecognition API available?) then (yes)
+  :Create recognition instance;
+  :Set continuous: false;
+  :Set interimResults: false;
+  :Set language: en-US;
+  :Attach event handlers;
+  note right
+    • onstart
+    • onend
+    • onresult
+    • onerror
+  end note
+  :Log: "Voice engine ready";
+else (no)
+  :Log warning: "Voice not supported";
+  :Disable voice features;
+  :Show fallback UI;
+endif
+
+|Speech Synthesis|
+:**Initialize Text-to-Speech**;
+
+if (speechSynthesis API available?) then (yes)
+  :Get available voices;
+  :Select preferred voice;
+  note right
+    Preference order:
+    1. Samantha
+    2. Daniel
+    3. Google voices
+  end note
+  :Set voice parameters;
+  note right
+    • rate: 0.95
+    • pitch: 1.0
+    • volume: 1.0
+  end note
+  :Log: "TTS engine ready";
+else (no)
+  :Log warning: "TTS not supported";
+  :Disable voice feedback;
+endif
+
+|Audio Engine|
+:**Initialize Web Audio**;
+
+:Create AudioContext;
+
+if (AudioContext created?) then (yes)
+  :Define tone generators;
+  note right
+    • chimeInfo (600Hz, 800Hz)
+    • chimeAlert (400Hz)
+    • buzzerJarring (150Hz)
+  end note
+  :Log: "Audio engine ready";
+else (no)
+  :Log warning: "Audio not supported";
+  :Disable sound effects;
+endif
+
+|Physics Engine|
+:**Initialize Car Physics**;
+
+:Set initial speed: 65 km/h;
+
+:Set target speed: 65 km/h;
+
+:Start physics tick interval (50ms);
+
+:Log: "Physics engine started";
+
+|UI Components|
+:**Initialize UI Elements**;
+
+:Query all DOM elements;
+
+fork
+  :Get central display;
+  :Get sidebar;
+  :Get content area;
+  :Get voice bar;
+fork again
+  :Get HUD container;
+  :Get gear indicator;
+  :Get system status;
+  :Get speed display;
+fork again
+  :Get modal overlay;
+  :Get modal content;
+  :Get modal actions;
+fork again
+  :Get steering wheel;
+  :Get squeeze button;
+  :Get map background;
+end fork
+
+:Store references in UI object;
+
+:Log: "UI components initialized";
+
+|Event Listeners|
+:**Attach Event Handlers**;
+
+:Mic toggle button → toggleMic();
+
+:Nav step items → loadStep(n);
+
+:Modal action buttons → scenario functions;
+
+:Keyboard shortcuts (future);
+
+:Log: "Event listeners attached";
+
+|Data Layer|
+:**Check Saved Data**;
+
+:Check localStorage;
+
+if (Saved locations exist?) then (yes)
+  :Load location data;
+  :Parse JSON;
+  :Restore markers;
+else (no)
+  :Initialize empty state;
+endif
+
+if (Saved preferences exist?) then (yes)
+  :Load user preferences;
+  :Apply settings;
+else (no)
+  :Use default settings;
+endif
+
+|Initial State|
+:**Set Initial UI State**;
+
+:Load Step 1 (Profile);
+
+:Set HUD context: "INITIALIZING";
+
+:Set progress: 0%;
+
+:Set gear: P (Park);
+
+:Set system status: "Diagnostics OK";
+
+:Set speed: 65 km/h;
+
+:Show annotation: "Initialising...";
+
+:Hide all modals;
+
+:Hide squeeze button;
+
+:Disable voice UI;
+
+|Permissions|
+:**Request Permissions** (Optional);
+
+fork
+  if (Request microphone?) then (yes)
+    :navigator.mediaDevices.getUserMedia;
+    if (Granted?) then (yes)
+      :Enable voice features;
+      :Log: "Mic access granted";
+    else (denied)
+      :Disable voice features;
+      :Log: "Mic access denied";
+    endif
+  endif
+fork again
+  if (Request camera?) then (yes)
+    :navigator.mediaDevices.getUserMedia;
+    if (Granted?) then (yes)
+      :Enable face scan;
+      :Log: "Camera access granted";
+    else (denied)
+      :Use placeholder;
+      :Log: "Camera access denied";
+    endif
+  endif
+end fork
+
+|Validation|
+:**System Health Check**;
+
+:Check all subsystems;
+
+fork
+  :Voice engine status;
+fork again
+  :Audio engine status;
+fork again
+  :Physics engine status;
+fork again
+  :UI components status;
+end fork
+
+if (All systems operational?) then (yes)
+  :Set status: "Ready";
+  :Enable all features;
+  :Log: "System ready";
+else (partial)
+  :Set status: "Degraded";
+  :Disable failed features;
+  :Log warnings;
+  :Show user notification;
+endif
+
+|Ready State|
+:**System Ready**;
+
+:Display welcome message;
+
+:Play welcome chime (optional);
+
+:Voice: "Welcome to AeroDrive";
+
+:Update annotation: "Ready for setup";
+
+:Enable user interaction;
+
+:Log: "Initialization complete";
+
+note right
+  **System is now ready for:**
+  • Onboarding flow
+  • Scenario simulations
+  • Voice commands
+  • User interactions
+end note
+
+|User|
+:User begins interaction;
+
+stop
+
+@enduml
