@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AeroDrive Driving Scenarios Storyboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --border: #1a1a1a;
+            --bg: #ffffff;
+            --panel-bg: #ffffff;
+            --accent: #F43F5E; /* Rose for alerts */
+            --safe: #10B981;  /* Emerald for success */
+            --tour: #38BDF8;  /* Sky for touring */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ── Header ── */
+        .poster-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            max-width: 900px;
+        }
+        .poster-header h1 {
+            font-family: 'Architects Daughter', cursive;
+            font-size: 3rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+        .poster-header p {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* ── Grid Layout ── */
+        .poster-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        /* ── Panel ── */
+        .panel {
+            border: 3px solid var(--border);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: var(--panel-bg);
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.1);
+        }
+
+        .panel-num {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            background: var(--border);
+            color: white;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Architects Daughter', cursive;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: 2px solid var(--border);
+        }
+
+        .image-box {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #f0f0f0;
+            border: 2px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content h3 {
+            font-family: 'Architects Daughter', cursive;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .content p {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .quote {
+            margin-top: 10px;
+            font-family: 'Architects Daughter', cursive;
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+        .quote.alert { color: var(--accent); }
+        .quote.safe { color: var(--safe); }
+        .quote.tour { color: var(--tour); }
+
+        /* ── Footer ── */
+        .poster-footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-weight: 600;
+            color: #999;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .poster-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .poster-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="poster-header">
+        <h1>AeroDrive Simulations</h1>
+        <p>Interactive Scenarios for Safety, Performance, and Discovery</p>
+    </header>
+
+    <main class="poster-grid">
+        <!-- Panel 1 -->
+        <div class="panel">
+            <div class="panel-num">1</div>
+            <div class="image-box">
+                <img src="screenshots/step5_stage1.png" alt="Autonomous Cruising">
+            </div>
+            <div class="content">
+                <h3>Autonomous Cruising</h3>
+                <p>The baseline state: 65 km/h on highway. The HUD confirms "AUTONOMOUS MODE" with a blue accent, ensuring Alex feels the system's stability.</p>
+                <div class="quote safe">"System active. Enjoy your journey."</div>
+            </div>
+        </div>
+
+        <!-- Panel 2 -->
+        <div class="panel">
+            <div class="panel-num">2</div>
+            <div class="image-box">
+                <img src="screenshots/step5_stage2.png" alt="Takeover Alert">
+            </div>
+            <div class="content">
+                <h3>Construction Takeover</h3>
+                <p>An unmapped construction zone is detected. An 8-second countdown initiates with amber strobe effects and a HUD takeover alert.</p>
+                <div class="quote alert">"Take manual control: Construction Zone."</div>
+            </div>
+        </div>
+
+        <!-- Panel 3 -->
+        <div class="panel">
+            <div class="panel-num">3</div>
+            <div class="image-box">
+                <img src="screenshots/reaction_safety.png" alt="Fatigue Detection">
+            </div>
+            <div class="content">
+                <h3>Fatigue Recovery</h3>
+                <p>Sensors detect driver drowsiness. The car escalates from soft chimes to a jarring buzzer, engaging emergency autonomous override.</p>
+                <div class="quote alert">"SOS: Fatigue detected. Calling services."</div>
+            </div>
+        </div>
+
+        <!-- Panel 4 -->
+        <div class="panel">
+            <div class="panel-num">4</div>
+            <div class="image-box">
+                <img src="screenshots/step3_sketch.png" alt="Battery Range">
+            </div>
+            <div class="content">
+                <h3>Predictive Range</h3>
+                <p>Algorithms predict range will fall short of the next charger. A reroute modal appears, offering a diversion to a high-speed station.</p>
+                <div class="quote tour">"Insufficient range detected. Reroute to charger?"</div>
+            </div>
+        </div>
+
+        <!-- Panel 5 -->
+        <div class="panel">
+            <div class="panel-num">5</div>
+            <div class="image-box">
+                <img src="screenshots/reaction_ambient.png" alt="Touring Mode">
+            </div>
+            <div class="content">
+                <h3>Journey Guide</h3>
+                <p>Alex activates Touring Mode. The car provides contextual commentary on landmarks, turning a routine drive into an exploration.</p>
+                <div class="quote tour">"On your left: The historic Old Town Hall."</div>
+            </div>
+        </div>
+
+        <!-- Panel 6 -->
+        <div class="panel">
+            <div class="panel-num">6</div>
+            <div class="image-box">
+                <img src="screenshots/step7.png" alt="System Reset">
+            </div>
+            <div class="content">
+                <h3>Safe Return</h3>
+                <p>After any scenario, the system resets to its trusted autonomous state. The HUD returns to blue, signaling all systems are normal.</p>
+                <div class="quote safe">"Simulation complete. Resetting to Auto."</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="poster-footer">
+        AeroDrive — Experience the Future — UIUDP 2026
+    </footer>
+
+</body>
+</html>
