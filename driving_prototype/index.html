@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous UI/UX Prototype</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="ambient-overlay"></div>
+
+    <!-- Meta Control Navbar -->
+    <nav id="meta-nav">
+        <div class="nav-brand">System Simulator [God-View] <span id="mic-status">🎙️ Mic Offline</span></div>
+        <div class="scenario-controls">
+            <button onclick="SystemLogic.triggerScenario('takeover')">1. Takeover</button>
+            <button onclick="SystemLogic.triggerScenario('fatigue')">2. Fatigue</button>
+            <button onclick="SystemLogic.triggerScenario('battery')">3. Battery</button>
+            <button onclick="SystemLogic.resetSystem()" class="reset-btn">Reset</button>
+        </div>
+    </nav>
+
+    <main id="cockpit">
+        <!-- Tablet Infotainment -->
+        <section id="tablet" class="screen">
+            <!-- Procedural CSS Dark Map -->
+            <div id="map-background"></div>
+            
+            <!-- Voice UI -->
+            <div id="voice-ui" class="hidden">
+                <div class="waveform">
+                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                </div>
+                <p id="voice-text">"Aditya, listening..."</p>
+            </div>
+
+            <!-- Animated Modal Container -->
+            <div id="tablet-modal" class="hidden">
+                <h2 id="modal-title">TITLE</h2>
+                <p id="modal-reason">Reasoning</p>
+                <div id="modal-timer" class="hidden">8</div>
+                <div id="modal-actions"></div>
+            </div>
+        </section>
+
+        <!-- Steering Column Proxy -->
+        <div id="steering-column">
+            <div id="steering-wheel">
+                <svg viewBox="0 0 100 100" class="wheel-svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#444" stroke-width="10"/>
+                    <path d="M 10 50 L 90 50 M 50 50 L 50 95" stroke="#444" stroke-width="8"/>
+                </svg>
+                <button id="squeeze-btn" class="hidden" onclick="SystemLogic.handleUserGrip()">SQUEEZE TO GRIP</button>
+            </div>
+        </div>
+
+        <!-- Dashboard HUD -->
+        <section id="dashboard" class="screen">
+            <div class="hud-top">
+                <span id="hud-status" class="status-badge sys-active">AUTONOMOUS</span>
+            </div>
+            
+            <div class="dials-container">
+                <div class="speed-dial">
+                    <!-- Dynamic SVG Speedometer -->
+                    <svg viewBox="0 0 120 70" class="speed-svg">
+                        <path d="M 10 60 A 50 50 0 0 1 110 60" fill="none" stroke="#222" stroke-width="8" stroke-linecap="round"/>
+                        <path id="speed-arc" d="M 10 60 A 50 50 0 0 1 110 60" fill="none" stroke="var(--sys-active)" stroke-width="8" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="60"/>
+                    </svg>
+                    <div class="dial-value" id="speed-val">65</div>
+                    <div class="dial-label">KM/H</div>
+                </div>
+            </div>
+
+            <div id="hud-alert" class="hidden">
+                <h3 id="hud-alert-text">EYES ON ROAD</h3>
+            </div>
+        </section>
+
+        <!-- Hardware Log -->
+        <aside id="hardware-log">
+            <h3>Physical Log</h3>
+            <ul id="log-list"><li class="log-item default">> System Booted</li></ul>
+        </aside>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+:root {
+    --bg-dark: #0F1115;
+    --panel-bg: #1A1D24;
+    --text-main: #FFFFFF;
+    --sys-active: #00E5FF;
+    --sys-warn: #FFC107;
+    --sys-crit: #D32F2F;
+}
+
+body { margin: 0; background: #050505; color: var(--text-main); font-family: 'Inter', sans-serif; overflow: hidden; }
+
+/* Meta Nav */
+#meta-nav { display: flex; justify-content: space-between; padding: 10px 20px; background: #111; font-size: 14px; }
+.scenario-controls button { background: #333; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+.scenario-controls button:hover { background: var(--sys-active); color: #000; }
+.reset-btn { background: #444 !important; }
+
+/* Cockpit Layout */
+#cockpit { display: grid; grid-template-columns: 4fr 1fr 2.5fr 1.5fr; gap: 20px; padding: 20px; height: calc(100vh - 40px); box-sizing: border-box; }
+.screen { background: var(--panel-bg); border-radius: 16px; border: 2px solid #222; position: relative; overflow: hidden; }
+
+/* Procedural Dark Map */
+#map-background {
+    position: absolute; inset: 0;
+    background-color: #13151a;
+    background-image: 
+        linear-gradient(#1f232b 2px, transparent 2px),
+        linear-gradient(90deg, #1f232b 2px, transparent 2px);
+    background-size: 40px 40px;
+    transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dim-map { filter: brightness(0.3) blur(8px); transform: scale(1.05); }
+
+/* Animated Tablet Modal */
+#tablet-modal {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(15, 17, 21, 0.95); padding: 30px; border-radius: 12px; text-align: center;
+    border: 2px solid transparent; width: 65%;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    animation: modalSlideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes modalSlideUp { from { opacity: 0; top: 60%; } to { opacity: 1; top: 50%; } }
+
+#modal-title { margin: 0 0 10px 0; font-size: 2rem; letter-spacing: 1px; }
+#modal-timer { font-size: 4rem; font-weight: bold; margin: 10px 0; font-variant-numeric: tabular-nums; }
+.action-btn { background: var(--sys-active); color: #000; border: none; padding: 12px 24px; font-weight: bold; border-radius: 8px; cursor: pointer; margin: 5px; }
+.action-btn.secondary { background: transparent; color: white; border: 2px solid #555; }
+
+/* Voice UI Indicator */
+#voice-ui { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--sys-active); }
+.waveform { display: flex; gap: 3px; }
+.bar { width: 4px; height: 15px; background: var(--sys-active); border-radius: 2px; animation: wave 1s infinite alternate; }
+.bar:nth-child(2) { animation-delay: 0.2s; } .bar:nth-child(3) { animation-delay: 0.4s; }
+@keyframes wave { 0% { height: 5px; } 100% { height: 20px; } }
+
+/* Steering Wheel & Squeeze */
+#steering-column { display: flex; align-items: center; justify-content: center; position: relative; }
+.wheel-svg { width: 140px; height: 140px; transition: 0.3s; }
+#squeeze-btn { position: absolute; background: var(--sys-crit); color: white; border: none; padding: 15px; border-radius: 50%; font-weight: bold; cursor: pointer; width: 90px; height: 90px; z-index: 10; animation: pulse 1s infinite alternate; }
+.shake-hard .wheel-svg { animation: shake 0.1s infinite; stroke: var(--sys-crit); }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+@keyframes pulse { from { transform: scale(0.95); box-shadow: 0 0 10px var(--sys-crit); } to { transform: scale(1.05); box-shadow: 0 0 30px var(--sys-crit); } }
+
+/* Dashboard & SVG Dials */
+#dashboard { padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+.status-badge { padding: 5px 15px; border-radius: 20px; color: #000; font-weight: bold; font-size: 0.9rem; letter-spacing: 1px; transition: 0.3s; }
+.sys-active { background-color: var(--sys-active); box-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
+.sys-crit { background-color: var(--sys-crit); color: white; box-shadow: 0 0 15px rgba(211, 47, 47, 0.5); }
+.sys-warn { background-color: var(--sys-warn); color: black; box-shadow: 0 0 10px rgba(255, 193, 7, 0.4); }
+
+.speed-dial { text-align: center; position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; }
+.speed-svg { width: 160px; height: 100px; }
+#speed-arc { transition: stroke-dashoffset 0.1s linear, stroke 0.3s; }
+.dial-value { font-size: 4.5rem; font-weight: bold; line-height: 1; margin-top: -40px; font-variant-numeric: tabular-nums; }
+.dial-label { color: #8892B0; font-size: 1rem; letter-spacing: 2px; }
+
+#hud-alert { width: 90%; text-align: center; border: 3px dashed var(--sys-crit); padding: 10px; border-radius: 8px; animation: strobeBorder 0.5s infinite alternate; }
+@keyframes strobeBorder { from { border-color: transparent; } to { border-color: var(--sys-crit); } }
+#hud-alert-text { margin: 0; font-size: 1.4rem; color: var(--sys-crit); }
+
+/* Hardware Log */
+#hardware-log { background: #111; padding: 15px; border-radius: 8px; border: 1px solid #222; }
+#log-list { list-style: none; padding: 0; margin: 0; font-family: monospace; font-size: 0.85rem; height: calc(100% - 30px); overflow-y: auto;}
+.log-item { padding: 4px 0; border-bottom: 1px solid #222; }
+.log-item.critical { color: var(--sys-crit); }
+.log-item.warning { color: var(--sys-warn); }
+
+/* Ambient Overlay */
+#ambient-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0; transition: 0.3s; }
+.strobe-red { animation: strobeR 0.4s infinite alternate; }
+.strobe-amber { animation: strobeA 0.8s infinite alternate; }
+@keyframes strobeR { from { background: rgba(211,47,47,0); } to { background: rgba(211,47,47,0.15); } }
+@keyframes strobeA { from { background: rgba(255,193,7,0); } to { background: rgba(255,193,7,0.1); } }
+.hidden { display: none !important; }
