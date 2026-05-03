@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AeroDrive Condensed Storyboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --border: #1a1a1a;
+            --bg: #ffffff;
+            --panel-bg: #ffffff;
+            --accent: #38BDF8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ── Header ── */
+        .poster-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            max-width: 900px;
+        }
+        .poster-header h1 {
+            font-family: 'Architects Daughter', cursive;
+            font-size: 3rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+        .poster-header p {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* ── Grid Layout ── */
+        .poster-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        /* ── Panel ── */
+        .panel {
+            border: 3px solid var(--border);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: var(--panel-bg);
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.1);
+        }
+
+        .panel-num {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            background: var(--border);
+            color: white;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Architects Daughter', cursive;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: 2px solid var(--border);
+        }
+
+        .image-box {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #f0f0f0;
+            border: 2px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content h3 {
+            font-family: 'Architects Daughter', cursive;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .content p {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .quote {
+            margin-top: 10px;
+            font-family: 'Architects Daughter', cursive;
+            font-size: 0.9rem;
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        /* ── Footer ── */
+        .poster-footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-weight: 600;
+            color: #999;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .poster-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .poster-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="poster-header">
+        <h1>AeroDrive Journey</h1>
+        <p>A Human-Centered Onboarding for Level 4 Autonomy</p>
+    </header>
+
+    <main class="poster-grid">
+        <!-- Panel 1 -->
+        <div class="panel">
+            <div class="panel-num">1</div>
+            <div class="image-box">
+                <img src="screenshots/step1_sketch.png" alt="Welcome">
+            </div>
+            <div class="content">
+                <h3>Identity & Welcome</h3>
+                <p>Alex enters the cabin. The system recognizes his face and voice instantly, establishing a personal bond before the first mile.</p>
+                <div class="quote">"Hello Alex, welcome back."</div>
+            </div>
+        </div>
+
+        <!-- Panel 2 -->
+        <div class="panel">
+            <div class="panel-num">2</div>
+            <div class="image-box">
+                <img src="screenshots/step2_sketch.png" alt="Comfort">
+            </div>
+            <div class="content">
+                <h3>Physical Sync</h3>
+                <p>With a tap or a word, the seat and climate adjust. The hardware moves in sync with the user's intent, building sensory trust.</p>
+                <div class="quote">"Setting lumbar support to 60%."</div>
+            </div>
+        </div>
+
+        <!-- Panel 3 -->
+        <div class="panel">
+            <div class="panel-num">3</div>
+            <div class="image-box">
+                <img src="screenshots/step4_slide1.png" alt="Education">
+            </div>
+            <div class="content">
+                <h3>Know the Limits</h3>
+                <p>The "CAN vs CAN'T" grid clarifies exactly where AI ends and human control begins. Transparency removes the dangerous black-box effect.</p>
+                <div class="quote">"I know exactly when to step in."</div>
+            </div>
+        </div>
+
+        <!-- Panel 4 -->
+        <div class="panel">
+            <div class="panel-num">4</div>
+            <div class="image-box">
+                <img src="screenshots/step5_stage2.png" alt="Alert">
+            </div>
+            <div class="content">
+                <h3>The 10-Second Warning</h3>
+                <p>A construction zone triggers a red pulse and HUD countdown. The system communicates urgency through sight, sound, and seat haptics.</p>
+                <div class="quote">"⚠ TAKE MANUAL CONTROL"</div>
+            </div>
+        </div>
+
+        <!-- Panel 5 -->
+        <div class="panel">
+            <div class="panel-num">5</div>
+            <div class="image-box">
+                <img src="screenshots/reaction_relief.png" alt="Success">
+            </div>
+            <div class="content">
+                <h3>Muscle Memory</h3>
+                <p>Alex practices the handoff. Successful override is confirmed with response-time feedback, turning a stressful moment into a mastered skill.</p>
+                <div class="quote">"Control Secured. 2.4s Response."</div>
+            </div>
+        </div>
+
+        <!-- Panel 6 -->
+        <div class="panel">
+            <div class="panel-num">6</div>
+            <div class="image-box">
+                <img src="screenshots/step7_context.png" alt="Ready">
+            </div>
+            <div class="content">
+                <h3>The Partnership</h3>
+                <p>All systems calibrated. Alex is no longer just a passenger, but a confident partner to the vehicle. Ready for the road ahead.</p>
+                <div class="quote">"We're ready to drive."</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="poster-footer">
+        AeroDrive — Trust Through Interaction — UIUDP 2026
+    </footer>
+
+</body>
+</html>
