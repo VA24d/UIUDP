@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+showcase/node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Playwright MCP logs
+.playwright-mcp/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+.venv/
+
+# Build artifacts
+dist/
+build/
+*.log
+
+# Coverage
+coverage/
+
+# Memory bank (optional — remove this line if you want to track it)
+# memory-bank/

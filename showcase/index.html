@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Unified AV Showcase — AeroDrive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="css/tokens.css?v=2">
+    <link rel="stylesheet" href="css/base.css?v=2">
+    <link rel="stylesheet" href="css/layout.css?v=2">
+    <link rel="stylesheet" href="css/components.css?v=2">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script type="module" src="js/main.js?v=2"></script>
+</head>
+
+<body>
+    <main class="stage">
+        <section class="cluster" aria-label="Dashboard cluster">
+            <!-- HUD Panel -->
+            <div id="hud-panel" class="hud-panel">
+                <div class="hud-top">
+                    <div class="gear-indicator" aria-label="Gear selector">
+                        <span class="gear active">P</span>
+                        <span class="gear">R</span>
+                        <span class="gear">N</span>
+                        <span class="gear">D</span>
+                    </div>
+                    <div class="hud-system-status" id="hud-status">
+                        <i class="ph-fill ph-check-circle"></i>
+                        <span>Diagnostics OK</span>
+                    </div>
+                </div>
+
+                <div class="hud-context" id="hud-context">
+                    <span class="hud-context-label" id="hud-context-label">INITIALIZING</span>
+                    <div class="hud-progress">
+                        <div class="hud-progress-fill" id="hud-progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="hud-center">
+                    <div class="hud-battery" aria-label="Battery status">
+                        <i class="ph-fill ph-battery-full"></i>
+                        <span class="hud-battery-pct">85%</span>
+                        <small class="hud-battery-range">320 mi Range</small>
+                    </div>
+                    <div id="hud-alert" class="hud-alert hidden" role="alert" aria-live="assertive">
+                        <i class="ph-fill ph-info"></i>
+                        <span id="hud-alert-text">Calibration Updated</span>
+                    </div>
+                </div>
+
+                <div class="hud-bottom">
+                    <div class="hud-gforce" aria-label="Drive profile meter">
+                        <label class="hud-meter-label">Drive Profile</label>
+                        <div class="hud-bar-container">
+                            <div class="hud-bar" id="hud-accel-bar" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="hud-safety" aria-label="Safety margin">
+                        <label class="hud-meter-label">Safety Margin</label>
+                        <div class="hud-dots" id="hud-dist-dots">
+                            <div class="hud-dot active"></div>
+                            <div class="hud-dot active"></div>
+                            <div class="hud-dot active"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="tablet" aria-label="Infotainment tablet"></section>
+        <div class="toast-host" aria-label="Notifications"></div>
+        <div class="nav-host" aria-label="Navigation"></div>
+        <nav class="timeline" aria-label="Showcase timeline"></nav>
+    </main>
+
+    <!-- Voice Bar (persistent, bottom-fixed) -->
+    <div class="voice-bar" id="voice-bar" aria-label="Voice assistant">
+        <button class="voice-bar-mic" id="mic-toggle" type="button" aria-label="Toggle microphone" aria-pressed="false">
+            <i class="ph-fill ph-microphone"></i>
+        </button>
+        <i class="ph-fill ph-speaker-high voice-bar-speaker" id="speaker-icon"></i>
+        <div class="voice-bar-info">
+            <span class="voice-bar-text" id="voice-text">Mic off — tap to listen</span>
+            <span class="voice-bar-heard" id="voice-heard"></span>
+        </div>
+    </div>
+
+    <!-- Cockpit Annotation -->
+    <div class="cockpit-annotation" id="cockpit-annotation" aria-live="polite">
+        Initialising AeroDrive Onboarding Simulation...
+    </div>
+
+    <div class="sr-only" role="status" aria-live="polite"></div>
+</body>
+
+</html>

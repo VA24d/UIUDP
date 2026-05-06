@@ -1,0 +1,124 @@
+/* Layout — dual-display grid. See design.md "Dual-display layout". */
+
+.stage {
+    display: grid;
+    grid-template-columns: minmax(420px, 5fr) minmax(520px, 7fr);
+    grid-template-rows: 1fr auto auto auto;
+    grid-template-areas:
+        "cluster tablet"
+        "toasts  toasts"
+        "nav     nav"
+        "timeline timeline";
+    gap: var(--sp-5);
+    padding: var(--sp-5);
+    min-height: 100vh;
+    background: var(--color-surface-page);
+}
+
+.cluster {
+    grid-area: cluster;
+    position: relative;
+    background: var(--color-surface-elevated);
+    border-radius: 14px;
+    box-shadow: var(--elevation-2), inset 0 1px 0 rgba(255, 255, 255, .6);
+    padding: var(--sp-5);
+    min-height: 420px;
+    overflow: hidden;
+    transition: opacity var(--motion-dur-step) var(--motion-ease-subtle),
+        transform var(--motion-dur-step) var(--motion-ease-subtle);
+}
+
+.tablet {
+    grid-area: tablet;
+    position: relative;
+    background: var(--color-surface-elevated);
+    border-radius: 14px;
+    box-shadow: var(--elevation-2), inset 0 1px 0 rgba(255, 255, 255, .6);
+    padding: var(--sp-5);
+    min-height: 420px;
+    overflow: hidden;
+    transition: opacity var(--motion-dur-step) var(--motion-ease-subtle),
+        transform var(--motion-dur-step) var(--motion-ease-subtle);
+}
+
+/* Accent bar running between cluster and tablet — reads as "one vehicle". */
+.stage::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    left: 50%;
+    top: var(--sp-5);
+    width: 2px;
+    height: 0;
+    background: var(--color-accent-primary);
+    opacity: .18;
+}
+
+.toast-host {
+    grid-area: toasts;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    min-height: 0;
+}
+
+.toast-host:empty {
+    display: none;
+}
+
+.timeline {
+    grid-area: timeline;
+    background: var(--color-surface-elevated);
+    border-radius: 14px;
+    box-shadow: var(--elevation-1);
+    padding: var(--sp-4) var(--sp-5);
+}
+
+/* Exit / enter states driven by cluster-host / tablet-host. */
+.cluster.is-exiting,
+.tablet.is-exiting {
+    opacity: 0;
+    transform: translateY(6px);
+    transition-duration: var(--t, var(--motion-dur-step));
+    transition-timing-function: var(--e, var(--motion-ease-subtle));
+}
+
+.cluster.is-entered,
+.tablet.is-entered {
+    opacity: 1;
+    transform: translateY(0);
+    transition-duration: var(--t, var(--motion-dur-step));
+    transition-timing-function: var(--e, var(--motion-ease-subtle));
+}
+
+/* Stacked layout below 1100px (degrade gracefully on narrow presenter screens). */
+@media (max-width: 1100px) {
+    .stage {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "cluster"
+            "tablet"
+            "toasts"
+            "nav"
+            "timeline";
+    }
+
+    .cluster,
+    .tablet {
+        min-height: 320px;
+    }
+}
+
+/* Nav region — global advance/retreat buttons, rendered by nav-controls.js. */
+.nav-host {
+    grid-area: nav;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--sp-3);
+}
+
+.nav {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: center;
+}

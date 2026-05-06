@@ -1,0 +1,13 @@
+{
+    "name": "unified-av-showcase",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test": "vitest --run"
+    },
+    "devDependencies": {
+        "fast-check": "^3.23.0",
+        "vitest": "^2.1.0",
+        "jsdom": "^25.0.0"
+    }
+}
