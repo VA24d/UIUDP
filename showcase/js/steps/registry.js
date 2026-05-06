@@ -1,5 +1,5 @@
 /**
- * Step registry. Canonical, ordered list of 14 Step descriptors across 5 Stages.
+ * Step registry. Canonical, ordered list of 15 Step descriptors across 5 Stages.
  * See design.md "Data Models" and "Global Step sequence".
  *
  * Later tasks replace each stub render fn by importing the real renderers from
@@ -32,6 +32,7 @@ export const STAGES = /** @type {const} */ (['intro', 'onboarding', 'driving', '
  * @property {TrustMoment[]} trustMoments
  * @property {TimedEvent[]=} timedEvents
  * @property {boolean=} voice
+ * @property {string[]=} notes  Presenter talking points shown in the P-key drawer
  * @property {(host: HTMLElement, step: Step) => void} renderCluster
  * @property {(host: HTMLElement, step: Step) => void} renderTablet
  */
@@ -55,18 +56,28 @@ const DEFAULTS = [
     { id: 'onboarding.preferences', stage: 'onboarding', slug: 'preferences', label: 'Preferences', title: 'Drive preferences', trustMoments: [] },
 
     // Driving
-    { id: 'driving.unmapped-zone', stage: 'driving', slug: 'unmapped-zone', label: 'Unmapped zone', title: 'Unmapped zone take-over', trustMoments: [] },
-    { id: 'driving.fatigue', stage: 'driving', slug: 'fatigue', label: 'Fatigue watch', title: 'Fatigue protocol', trustMoments: [] },
-    { id: 'driving.battery', stage: 'driving', slug: 'battery', label: 'Battery reroute', title: 'Dynamic battery management', trustMoments: [] },
+    { id: 'driving.unmapped-zone', stage: 'driving', slug: 'unmapped-zone', label: 'Unmapped zone', title: 'Unmapped zone take-over', trustMoments: [],
+      notes: ['This is a spontaneous event — the car cannot proceed autonomously into unmapped territory.', 'The driver is given a clear, calm prompt with the reason and a single action to take.', 'Key message: AeroDrive asks permission before every handover — it never surprises you.'] },
+    { id: 'driving.fatigue', stage: 'driving', slug: 'fatigue', label: 'Fatigue watch', title: 'Fatigue protocol', trustMoments: [],
+      notes: ['Three-level escalation mirrors real drowsiness progression (attention → warning → critical).', 'Each level uses a visually distinct alert state — colour + animation intensity increase.', 'Emphasise: the system is watching for your safety, not monitoring you for surveillance.'] },
+    { id: 'driving.battery', stage: 'driving', slug: 'battery', label: 'Battery reroute', title: 'Dynamic battery management', trustMoments: [],
+      notes: ['The map shows range math transparently — no hidden estimates.', 'Two honest options: recommended detour (charger) or continue on planned route.', 'POI pins are clickable — tap the charger or rest stop to see ETA impact.', 'Key message: Range math is shown, not hidden.'] },
+    { id: 'driving.weather', stage: 'driving', slug: 'weather', label: 'Weather sensors', title: 'Sensor degradation in rain', trustMoments: [{ id: 'driving.weather.sensor-transparency', text: 'Sensor limits shown in real time, not hidden' }],
+      notes: ['Heavy rain reduces lidar and camera effective range from 120m to ~60m.', 'The radar visualisation shows the degraded detection cone in real-time.', 'AeroDrive slows and increases following distance automatically — this is shown on the HUD.', 'Key message: You always know what the car can and cannot see.'] },
 
     // Riding
-    { id: 'riding.environment', stage: 'riding', slug: 'environment', label: 'Environment', title: 'What the car sees', trustMoments: [] },
-    { id: 'riding.maneuver', stage: 'riding', slug: 'maneuver', label: 'Maneuver', title: 'Maneuver preview', trustMoments: [] },
-    { id: 'riding.productive-time', stage: 'riding', slug: 'productive-time', label: 'Productive time', title: 'Your time, back', trustMoments: [] },
+    { id: 'riding.environment', stage: 'riding', slug: 'environment', label: 'Environment', title: 'What the car sees', trustMoments: [],
+      notes: ['The perception HUD shows all detected objects with bounding boxes and distance labels.', 'Green = vehicles, Amber = pedestrians, Blue = signs/infrastructure.', 'Key message: You see what the car sees — nothing is hidden from the passenger.'] },
+    { id: 'riding.maneuver', stage: 'riding', slug: 'maneuver', label: 'Maneuver', title: 'Maneuver preview', trustMoments: [],
+      notes: ['The tablet shows the upcoming turn 3 seconds before the car executes it.', 'This gives passengers time to brace and eliminates surprise — critical for trust.', 'Key message: You see the turn before the car makes it.'] },
+    { id: 'riding.productive-time', stage: 'riding', slug: 'productive-time', label: 'Productive time', title: 'Your time, back', trustMoments: [],
+      notes: ['Only offered when the autonomy budget is stable and the route is clear.', 'Tasks are sourced from the user\'s real calendar and email (simulated here).', 'The system will interrupt if conditions change — it never silently disengages.'] },
 
     // Summary
-    { id: 'summary.recap', stage: 'summary', slug: 'recap', label: 'Recap', title: 'Trust, in motion', trustMoments: [] },
+    { id: 'summary.recap', stage: 'summary', slug: 'recap', label: 'Recap', title: 'Trust, in motion', trustMoments: [],
+      notes: ['Walk through the Trust Moment count — each shield icon represents a transparency disclosure.', 'Invite questions from the audience about any specific scenario.', 'The "Restart showcase" button loops back to the beginning for the next participant.'] },
 ];
+
 
 /**
  * Build a validated registry from a list of partial descriptors.
@@ -115,6 +126,7 @@ export function buildRegistry(descriptors) {
             trustMoments: Array.isArray(d.trustMoments) ? d.trustMoments.slice() : [],
             timedEvents: Array.isArray(d.timedEvents) ? d.timedEvents.slice() : undefined,
             voice: d.voice === true,
+            notes: Array.isArray(d.notes) ? d.notes.slice() : [],
             renderCluster: typeof d.renderCluster === 'function' ? d.renderCluster : stubRender,
             renderTablet: typeof d.renderTablet === 'function' ? d.renderTablet : stubRender,
         });

@@ -2,7 +2,7 @@
  * Unified AV Showcase — boot entry.
  * Wires every module per the deterministic boot order in design.md task 22.
  */
-import { applyTheme, createThemeSystem } from './core/theme-system.js';
+import { applyTheme, createThemeSystem, toggleTheme } from './core/theme-system.js';
 import { createBus } from './core/event-bus.js';
 import { buildRegistryWithOverrides, STAGES } from './steps/registry.js';
 import { createStateRouter } from './core/state-router.js';
@@ -15,6 +15,8 @@ import { createNavControls } from './core/nav-controls.js';
 import { showHashErrorToast } from './core/toast.js';
 import { createHUD } from './core/hud.js';
 import { createVoiceService } from './core/voice.js';
+import { createAutoplay } from './core/autoplay.js';
+import { createPresenterNotes } from './core/presenter-notes.js';
 
 import { makeIntroStep } from './modules/intro.js';
 import { makeOnboardingSteps } from './modules/onboarding.js';
@@ -84,10 +86,25 @@ function boot() {
     // 9b. HUD — subscribes to stepDidChange via bus internally.
     createHUD({ bus });
 
+    // 9c. Theme toggle button.
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => toggleTheme());
+    }
+
     // 9c. Voice service — always-on, auto-starts recognition on boot.
     // Connects to controller for advance/retreat, subscribes to step changes
     // for context-aware command routing and suppression during driving stages.
     createVoiceService({ bus, controller, steps });
+
+    // 9d. Auto-play — A-key kiosk mode. Badge injected at end of nav bar.
+    const autoplay = createAutoplay({ bus, controller, steps, dwellMs: 5000 });
+    if (navHostRoot) {
+        navHostRoot.appendChild(autoplay.getBadge());
+    }
+
+    // 9e. Presenter notes — P-key slide-up drawer with per-step talking points.
+    createPresenterNotes({ bus, steps });
 
     // 10. Router → controller bridge. On malformed or unknown hash, reset and toast.
     onIndexFromHash = (r) => {

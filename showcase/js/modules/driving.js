@@ -1,7 +1,7 @@
 /**
- * Driving module — three autonomous-driving scenarios.
- * Ported in shape from `driving_prototype/app.js`: unmapped-zone takeover (4B),
- * escalating fatigue protocol (5A/5B), dynamic battery management (1C).
+ * Driving module — four autonomous-driving scenarios.
+ * unmapped-zone takeover, escalating fatigue protocol,
+ * dynamic battery management (with POI map), weather sensor degradation.
  * See design.md "Driving Steps 7–9" and requirements Req 9.
  */
 
@@ -26,6 +26,13 @@ const SCENARIOS = {
         autonomy: 'L4 ACTIVE',
         speedKph: 92,
         trust: { id: 'driving.battery.math', text: 'Range math is shown, not hidden' },
+    },
+    weather: {
+        title: 'Sensor degradation in rain',
+        intent: 'Heavy rain is reducing effective sensor range. AeroDrive has adapted speed and following distance.',
+        autonomy: 'L3 ASSISTED',
+        speedKph: 74,
+        trust: { id: 'driving.weather.sensor-transparency', text: 'Sensor limits shown in real time, not hidden' },
     },
 };
 
@@ -55,12 +62,6 @@ function renderUnmappedClusterInitial(host) {
     baseCluster('unmapped-zone', host, 'is-warning', 'WATCHING');
 }
 
-function renderUnmappedClusterTakeover(host) {
-    baseCluster('unmapped-zone', host, 'is-critical', 'TAKE OVER NOW',
-        '<p class="t-caption" style="margin-top:var(--sp-3);color:var(--color-critical);font-weight:700;">EYES ON ROAD</p>'
-    );
-}
-
 function renderUnmappedTablet(host, step, controller, bus) {
     const s = SCENARIOS['unmapped-zone'];
     host.innerHTML = `
@@ -82,7 +83,6 @@ function renderUnmappedTablet(host, step, controller, bus) {
     `;
     host.querySelector('[data-cta="next"]').addEventListener('click', () => controller.advance('driving-next'));
 
-    // After 2s, escalate both hosts to the takeover prompt simultaneously (Req 9.4).
     const t = setTimeout(() => {
         const slot = host.querySelector('[data-prompt-slot]');
         if (slot) {
@@ -96,7 +96,6 @@ function renderUnmappedTablet(host, step, controller, bus) {
             const grip = slot.querySelector('[data-cta="grip"]');
             if (grip) grip.addEventListener('click', () => controller.advance('driving-takeover-confirmed'));
         }
-        // Cluster listens to the same event — keeps dual-display in sync (Req 9.4).
         bus.emit('timedEvent', { stepIndex: step.globalIndex, eventId: 'takeover-prompt' });
     }, 2000);
     const stop = bus.on('stepWillChange', () => { clearTimeout(t); stop(); });
@@ -136,7 +135,6 @@ function renderFatigueTablet(host, step, controller, bus) {
     `;
     host.querySelector('[data-cta="next"]').addEventListener('click', () => controller.advance('driving-next'));
 
-    // Escalate every 4s.
     let level = 0;
     const tick = setInterval(() => {
         level = Math.min(level + 1, FATIGUE_LEVELS.length - 1);
@@ -154,7 +152,7 @@ function renderFatigueTablet(host, step, controller, bus) {
     const stop = bus.on('stepWillChange', () => { clearInterval(tick); stop(); });
 }
 
-// ── Battery ───────────────────────────────────────────────────────────
+// ── Battery (with POI map) ────────────────────────────────────────────
 
 function renderBatteryCluster(host) {
     baseCluster('battery', host, 'is-warning', 'CRITICAL RANGE',
@@ -162,17 +160,44 @@ function renderBatteryCluster(host) {
     );
 }
 
+const POI_PINS = [
+    { id: 'charger-1', x: 58, y: 34, icon: '⚡', label: 'Supercharger', sub: '+6 min · adds 80 km', recommended: true },
+    { id: 'rest-stop', x: 72, y: 52, icon: '🍔', label: 'Rest Stop', sub: '+2 min · no charging', recommended: false },
+];
+
 function renderBatteryTablet(host, step, controller) {
     const s = SCENARIOS.battery;
+    const pinsHtml = POI_PINS.map(p => `
+        <g class="poi-pin" data-poi="${p.id}" role="button" tabindex="0" aria-label="${p.label}">
+            <rect class="pin-bg" x="${p.x - 14}" y="${p.y - 14}" width="28" height="22" rx="5"/>
+            <text class="pin-icon" x="${p.x}" y="${p.y - 2}">${p.icon}</text>
+        </g>
+    `).join('');
+
     host.innerHTML = `
         <div class="tablet-step">
             <p class="t-caption step-meta">Driving · Battery management</p>
             <h2 class="step-title">${s.title}</h2>
             <p class="step-purpose">${s.intent}</p>
+
+            <div class="poi-map-wrap">
+                <svg viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet">
+                    <path class="poi-road" d="M5,30 L95,30"/>
+                    <path class="poi-road" d="M60,5 L60,55"/>
+                    <path class="poi-route-original" d="M10,30 Q30,30 50,30 Q75,30 90,30"/>
+                    <path class="poi-route-detour" d="M30,30 Q45,30 52,28 Q56,22 58,20"/>
+                    ${pinsHtml}
+                    <rect x="27" y="27" width="6" height="6" rx="2" fill="var(--color-accent-primary)" opacity="0.9"/>
+                </svg>
+                <div id="poi-tooltip" class="poi-tooltip" style="display:none;left:0;top:0;"></div>
+            </div>
+
+            <div data-eta-slot></div>
+
             <div class="choice-list">
                 <button type="button" class="choice-card is-default" data-choice="reroute" autofocus>
-                    <span class="choice-default-tag">Default</span>
-                    <span class="choice-title">Reroute to nearest charger (recommended)</span>
+                    <span class="choice-default-tag">Recommended</span>
+                    <span class="choice-title">Reroute to nearest charger</span>
                     <span class="t-caption">Adds 6 minutes. Keeps you above safe reserve.</span>
                 </button>
                 <button type="button" class="choice-card" data-choice="continue">
@@ -180,6 +205,7 @@ function renderBatteryTablet(host, step, controller) {
                     <span class="t-caption">AeroDrive will force low-power mode if range drops further.</span>
                 </button>
             </div>
+
             <div class="step-actions">
                 ${tmShield(s.trust)}
                 <button type="button" role="button" class="btn btn-primary" data-cta="confirm">
@@ -188,11 +214,132 @@ function renderBatteryTablet(host, step, controller) {
             </div>
         </div>
     `;
+
+    const tooltip = host.querySelector('#poi-tooltip');
+    host.querySelectorAll('.poi-pin').forEach(pin => {
+        const id = pin.dataset.poi;
+        const poi = POI_PINS.find(p => p.id === id);
+        if (!poi) return;
+
+        function showTooltip() {
+            if (!tooltip) return;
+            tooltip.innerHTML = `<strong>${poi.icon} ${poi.label}</strong><span>${poi.sub}</span>`;
+            const rect = pin.getBoundingClientRect();
+            const wrap = host.querySelector('.poi-map-wrap').getBoundingClientRect();
+            tooltip.style.display = 'block';
+            tooltip.style.left = `${rect.left - wrap.left + rect.width / 2}px`;
+            tooltip.style.top = `${rect.top - wrap.top}px`;
+            const etaSlot = host.querySelector('[data-eta-slot]');
+            if (etaSlot) {
+                etaSlot.innerHTML = `<div class="poi-eta-update">📍 ${poi.label} selected — ${poi.sub}</div>`;
+            }
+        }
+        pin.addEventListener('mouseenter', showTooltip);
+        pin.addEventListener('focus', showTooltip);
+        pin.addEventListener('mouseleave', () => { if (tooltip) tooltip.style.display = 'none'; });
+        pin.addEventListener('click', () => {
+            host.querySelectorAll('.poi-pin').forEach(p => p.classList.remove('is-selected'));
+            pin.classList.add('is-selected');
+            showTooltip();
+        });
+    });
+
     const defaultCard = host.querySelector('[data-choice="reroute"]');
     if (defaultCard && typeof defaultCard.focus === 'function') {
         try { defaultCard.focus(); } catch { /* jsdom */ }
     }
     host.querySelector('[data-cta="confirm"]').addEventListener('click', () => controller.advance('driving-battery-confirmed'));
+}
+
+// ── Weather / sensor degradation ─────────────────────────────────────
+
+function renderWeatherCluster(host) {
+    const s = SCENARIOS.weather;
+    host.innerHTML = `
+        <div class="cluster-title">
+            <span class="t-caption cluster-context">Driving · ${s.title}</span>
+            <span class="cluster-autonomy">${s.autonomy}</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:var(--sp-3);">
+            <span class="cluster-speed">${s.speedKph}</span>
+            <span class="t-caption">km/h</span>
+        </div>
+        <div style="margin-top:var(--sp-3);">
+            <span class="cluster-alert-pill escalation-2 is-warning">SENSOR DEGRADED</span>
+        </div>
+        <p class="t-caption" style="margin-top:var(--sp-3);color:var(--color-warning);">
+            Effective range: 60m (normal 120m) · +5m following distance
+        </p>
+    `;
+}
+
+function renderWeatherTablet(host, step, controller) {
+    const s = SCENARIOS.weather;
+
+    const sensors = [
+        { name: 'LiDAR', pct: 52, degraded: true },
+        { name: 'Camera', pct: 38, degraded: true },
+        { name: 'Radar', pct: 91, degraded: false },
+        { name: 'GPS', pct: 99, degraded: false },
+    ];
+
+    const sensorBarsHtml = sensors.map(sen => `
+        <div class="sensor-row">
+            <span class="sensor-name">${sen.name}</span>
+            <div class="sensor-bar-track">
+                <div class="sensor-bar-fill ${sen.degraded ? 'is-degraded' : 'is-ok'}"
+                     style="width:0%;" data-pct="${sen.pct}"></div>
+            </div>
+            <span class="sensor-pct">${sen.pct}%</span>
+        </div>
+    `).join('');
+
+    host.innerHTML = `
+        <div class="tablet-step">
+            <p class="t-caption step-meta">Driving · Weather / sensors</p>
+            <h2 class="step-title">${s.title}</h2>
+            <p class="step-purpose">${s.intent}</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);align-items:start;">
+                <div class="weather-radar">
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                        <circle class="radar-ring" cx="50" cy="50" r="40"/>
+                        <circle class="radar-ring" cx="50" cy="50" r="28"/>
+                        <circle class="radar-ring" cx="50" cy="50" r="16"/>
+                        <circle class="radar-range-limit" cx="50" cy="50" r="22"/>
+                        <path class="radar-sweep" d="M50,50 L50,10 A40,40 0 0,1 82,27 Z"/>
+                        <circle cx="50" cy="50" r="3" fill="var(--color-accent-primary)"/>
+                        <rect class="radar-noise" x="30" y="20" width="3" height="3" rx="1"/>
+                        <rect class="radar-noise" x="60" y="35" width="2" height="2" rx="1"/>
+                        <rect class="radar-noise" x="45" y="72" width="3" height="3" rx="1"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="weather-status-bar">
+                        <span class="weather-status-icon">🌧</span>
+                        <div class="weather-status-text">
+                            <span class="weather-status-title">Heavy rain</span>
+                            <span class="weather-status-sub">Sensor range reduced to 60 m</span>
+                        </div>
+                    </div>
+                    <div class="sensor-degradation-bar">${sensorBarsHtml}</div>
+                </div>
+            </div>
+            <div class="step-actions">
+                <span class="trust-moment">${s.trust.text}</span>
+                <button type="button" role="button" class="btn btn-secondary" data-cta="next">
+                    Next scenario
+                </button>
+            </div>
+        </div>
+    `;
+
+    setTimeout(() => {
+        host.querySelectorAll('.sensor-bar-fill').forEach(bar => {
+            bar.style.width = `${bar.dataset.pct}%`;
+        });
+    }, 200);
+
+    host.querySelector('[data-cta="next"]').addEventListener('click', () => controller.advance('driving-next'));
 }
 
 // ── Exports ───────────────────────────────────────────────────────────
@@ -222,6 +369,14 @@ export function makeDrivingSteps({ controller, bus }) {
             trustMoments: [SCENARIOS.battery.trust],
             renderCluster: (host) => renderBatteryCluster(host),
             renderTablet: (host, step) => renderBatteryTablet(host, step, controller),
+        },
+        {
+            id: 'driving.weather',
+            stage: 'driving', slug: 'weather',
+            label: 'Weather sensors', title: SCENARIOS.weather.title,
+            trustMoments: [SCENARIOS.weather.trust],
+            renderCluster: (host) => renderWeatherCluster(host),
+            renderTablet: (host, step) => renderWeatherTablet(host, step, controller),
         },
     ];
 }

@@ -17,6 +17,7 @@ const hudContextMap = {
     'driving.unmapped-zone': { label: 'DRIVING: UNMAPPED ZONE', progress: 100, warning: true },
     'driving.fatigue': { label: 'DRIVING: FATIGUE WATCH', progress: 100, warning: true },
     'driving.battery': { label: 'DRIVING: BATTERY', progress: 100, warning: true },
+    'driving.weather': { label: 'DRIVING: WEATHER SENSORS', progress: 100, warning: true },
     'riding.environment': { label: 'RIDING: ENVIRONMENT', progress: 100, warning: false },
     'riding.maneuver': { label: 'RIDING: MANEUVER', progress: 100, warning: false },
     'riding.productive-time': { label: 'RIDING: PRODUCTIVE', progress: 100, warning: false },

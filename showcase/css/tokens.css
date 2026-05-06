@@ -158,6 +158,17 @@
     --elevation-2: 0 4px 12px rgba(15, 23, 42, .06), 0 1px 2px rgba(15, 23, 42, .04);
     --elevation-3: 0 12px 32px rgba(15, 23, 42, .08), 0 2px 6px rgba(15, 23, 42, .04);
 
+    /* Glow tokens — subtle in light mode */
+    --glow-accent: 0 0 12px rgba(43, 76, 255, 0.18);
+    --glow-success: 0 0 8px rgba(31, 122, 76, 0.2);
+
+    /* Glass tokens — unused in light mode (solid surfaces), set to neutral fallbacks */
+    --glass-bg: var(--color-surface-elevated);
+    --glass-blur: none;
+    --glass-border-top: none;
+    --glass-border-side: none;
+    --glass-shadow: var(--elevation-2);
+
     /* Motion */
     --motion-dur-micro: 200ms;
     --motion-dur-step: 400ms;
@@ -184,4 +195,14 @@
         transition-duration: 0s !important;
         scroll-behavior: auto !important;
     }
+}
+
+/* Toast slide animations */
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes toast-out {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-8px); }
 }

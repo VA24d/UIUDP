@@ -40,9 +40,57 @@ function baseCluster(host, slug, extra = '') {
 
 function tmShield(tm) { return tm ? `<span class="trust-moment">${tm.text}</span>` : ''; }
 
-// ── Environment ───────────────────────────────────────────────────────
+// ── Environment / Perception HUD ─────────────────────────────────────
 
-function renderEnvironmentCluster(host) { baseCluster(host, 'environment'); }
+const DETECTED_OBJECTS = [
+    { type: 'car',        x: 35, y: 22, w: 22, h: 12, label: 'VEH', dist: '18m', delay: 0 },
+    { type: 'car',        x: 62, y: 18, w: 18, h: 10, label: 'VEH', dist: '31m', delay: 200 },
+    { type: 'pedestrian', x: 14, y: 30, w: 8,  h: 16, label: 'PED', dist: '9m',  delay: 400 },
+    { type: 'sign',       x: 78, y: 10, w: 10, h: 10, label: 'SGN', dist: '45m', delay: 600 },
+    { type: 'car',        x: 50, y: 48, w: 20, h: 11, label: 'VEH', dist: '52m', delay: 150 },
+];
+
+function buildPerceptionSVG() {
+    const W = 100, H = 65;
+    // Grid lines
+    const gridLines = [];
+    for (let x = 10; x < W; x += 20) gridLines.push(`<line class="perception-grid-line" x1="${x}" y1="0" x2="${x}" y2="${H}"/>`);
+    for (let y = 10; y < H; y += 15) gridLines.push(`<line class="perception-grid-line" x1="0" y1="${y}" x2="${W}" y2="${y}"/>`);
+
+    // Bounding boxes
+    const bboxes = DETECTED_OBJECTS.map((obj, i) => `
+        <rect class="perception-bbox is-${obj.type}"
+              x="${obj.x}" y="${obj.y}" width="${obj.w}" height="${obj.h}"
+              style="animation-delay:${obj.delay}ms"/>
+        <text class="perception-label" x="${obj.x + 1}" y="${obj.y - 2}">${obj.label} ${obj.dist}</text>
+    `).join('');
+
+    // Range sweep (from ego, bottom-center)
+    const egoX = W / 2, egoY = H - 4;
+    const arcR = 30;
+
+    return `
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+            ${gridLines.join('')}
+            <!-- Detection range arcs -->
+            <path class="perception-range-arc" d="M${egoX - arcR},${egoY} A${arcR},${arcR} 0 0,1 ${egoX + arcR},${egoY}"/>
+            <path class="perception-range-arc" d="M${egoX - 20},${egoY} A20,20 0 0,1 ${egoX + 20},${egoY}" opacity="0.5"/>
+            <!-- Sweep wedge -->
+            <path class="perception-range-sweep" d="M${egoX},${egoY} L${egoX},${egoY - arcR} A${arcR},${arcR} 0 0,1 ${egoX + arcR * 0.5},${egoY - arcR * 0.87} Z"/>
+            ${bboxes}
+            <!-- Ego vehicle -->
+            <rect class="perception-ego" x="${egoX - 3}" y="${egoY - 5}" width="6" height="8" rx="1"/>
+        </svg>
+    `;
+}
+
+function renderEnvironmentCluster(host) {
+    baseCluster(host, 'environment',
+        `<p class="t-caption" style="margin-top:var(--sp-3);color:var(--color-success);font-weight:600;">
+            ${DETECTED_OBJECTS.length} OBJECTS TRACKED
+        </p>`
+    );
+}
 
 function renderEnvironmentTablet(host, step, controller) {
     const s = SCENARIOS.environment;
@@ -51,11 +99,17 @@ function renderEnvironmentTablet(host, step, controller) {
             <p class="t-caption step-meta">Riding · Environment</p>
             <h2 class="step-title">${s.title}</h2>
             <p class="step-purpose">${s.intent}</p>
-            <div class="ambient-grid" data-ambient>
-                <div class="ambient-tile"><p class="tile-cap t-caption">Weather</p><p class="tile-val">Clear · 19 °C</p></div>
-                <div class="ambient-tile"><p class="tile-cap t-caption">Cabin</p><p class="tile-val">21 °C · Quiet</p></div>
-                <div class="ambient-tile"><p class="tile-cap t-caption">Air quality</p><p class="tile-val">● ● ● ○</p></div>
-                <div class="ambient-tile"><p class="tile-cap t-caption">Ambient light</p><p class="tile-val">Soft amber</p></div>
+            <div class="perception-hud">
+                ${buildPerceptionSVG()}
+                <div class="perception-count-badge">
+                    <span class="perception-count-num">${DETECTED_OBJECTS.length}</span>
+                    <span class="perception-count-cap">Objects tracked</span>
+                </div>
+            </div>
+            <div style="display:flex;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-2);">
+                <span style="font-size:11px;color:#4ADE80;font-weight:600;">■ Vehicles</span>
+                <span style="font-size:11px;color:#FBBF24;font-weight:600;">■ Pedestrians</span>
+                <span style="font-size:11px;color:#60A5FA;font-weight:600;">■ Signs</span>
             </div>
             <div class="step-actions">
                 ${tmShield(s.trust)}
@@ -67,6 +121,8 @@ function renderEnvironmentTablet(host, step, controller) {
     `;
     host.querySelector('[data-cta="next"]').addEventListener('click', () => controller.advance('riding-env-next'));
 }
+
+
 
 // ── Maneuver ──────────────────────────────────────────────────────────
 
