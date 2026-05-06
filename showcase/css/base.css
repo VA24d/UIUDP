@@ -23,7 +23,7 @@ body {
     font-family: var(--font-family-sans);
     font-size: var(--font-body-size);
     line-height: var(--font-body-lh);
-    font-weight: var(--font-body-weight);
+    font-weight: 300;
     color: var(--color-text-primary);
     background: var(--color-surface-page);
     -webkit-font-smoothing: antialiased;
@@ -116,6 +116,7 @@ pre {
     font-size: var(--font-heading-size);
     line-height: var(--font-heading-lh);
     font-weight: var(--font-heading-weight);
+    letter-spacing: -0.01em;
 }
 
 .t-subhead {

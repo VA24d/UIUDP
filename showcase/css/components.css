@@ -71,7 +71,7 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: var(--color-surface-elevated);
+    background: var(--color-surface-subtle);
     border: 2px solid var(--color-border-strong);
     box-sizing: border-box;
     transition: all var(--motion-dur-micro) var(--motion-ease-subtle);
@@ -80,7 +80,7 @@
 .tl-node.is-filled .tl-dot {
     background: var(--color-accent-primary);
     border-color: var(--color-accent-primary);
-    box-shadow: var(--elevation-1);
+    box-shadow: var(--glow-accent, var(--elevation-1));
 }
 
 .tl-node.is-active .tl-dot {
@@ -91,7 +91,7 @@
 }
 
 .tl-node.is-unfilled .tl-dot {
-    background: var(--color-surface-elevated);
+    background: var(--color-surface-subtle);
     border-color: var(--color-border-strong);
 }
 
@@ -182,17 +182,19 @@
 }
 
 .btn-primary:hover {
-    box-shadow: var(--elevation-2);
+    box-shadow: var(--elevation-2), var(--glow-accent, 0 0 20px rgba(43, 76, 255, 0.3));
     filter: brightness(1.06);
 }
 
 .btn-secondary {
     background: var(--color-surface-subtle);
     color: var(--color-text-primary);
+    border: 1px solid var(--color-border-subtle);
 }
 
 .btn-secondary:hover {
     background: var(--color-border-subtle);
+    box-shadow: var(--glow-accent, none);
 }
 
 .btn-ghost {
@@ -203,6 +205,7 @@
 
 .btn-ghost:hover {
     background: var(--color-surface-subtle);
+    box-shadow: var(--glow-accent, none);
 }
 
 /* Nav controls (advance / retreat). */
@@ -212,13 +215,16 @@
     gap: var(--sp-2);
     padding: var(--sp-3) var(--sp-4);
     border-radius: 999px;
-    background: var(--color-surface-elevated);
+    background: var(--color-surface-subtle);
+    border: 1px solid var(--color-border-subtle);
     box-shadow: var(--elevation-1);
     font-weight: 600;
+    color: var(--color-text-primary);
 }
 
 .nav-btn:hover {
-    box-shadow: var(--elevation-2);
+    box-shadow: var(--elevation-2), var(--glow-accent, none);
+    border-color: var(--color-border-strong);
 }
 
 .nav-end-indicator {
@@ -263,6 +269,7 @@
     font-weight: 600;
     letter-spacing: var(--font-caption-tracking);
     text-transform: var(--font-caption-transform);
+    border: 1px solid var(--color-border-subtle);
 }
 
 .trust-moment::before {
@@ -612,14 +619,20 @@
     padding: var(--sp-4);
     border-radius: 12px;
     background: var(--color-surface-subtle);
-    border: 2px solid transparent;
+    border: 1px solid var(--color-border-subtle);
     text-align: left;
     cursor: pointer;
+    transition: all var(--motion-dur-micro) var(--motion-ease-subtle);
+}
+
+.choice-card:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--glow-accent, none);
 }
 
 .choice-card.is-default {
     border-color: var(--color-accent-primary);
-    background: var(--color-surface-elevated);
+    background: var(--color-accent-soft);
     box-shadow: var(--elevation-1);
 }
 
@@ -1950,4 +1963,37 @@
 
 .preview-stat strong {
     color: var(--color-text-primary);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DARK THEME — Hover Glow & Pulse Animations
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Hover glow on interactive elements */
+.pref-option:hover,
+.seat-hotspot:hover,
+.zone-btn:hover,
+.slide-prev:hover,
+.slide-next:hover {
+    box-shadow: var(--glow-accent, none);
+}
+
+/* Pulse animation for active accent elements */
+@keyframes accent-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 12px rgba(43, 76, 255, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(43, 76, 255, 0.5);
+    }
+}
+
+.tl-node.is-active .tl-dot,
+.cluster-pip.is-current,
+.pref-option.is-active {
+    animation: accent-pulse 2s var(--motion-ease-subtle) infinite;
 }

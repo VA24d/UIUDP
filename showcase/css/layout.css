@@ -12,15 +12,21 @@
     gap: var(--sp-5);
     padding: var(--sp-5);
     min-height: 100vh;
-    background: var(--color-surface-page);
+    background: radial-gradient(circle at center, #11141a 0%, #050505 100%);
 }
 
 .cluster {
     grid-area: cluster;
     position: relative;
-    background: var(--color-surface-elevated);
+    background: var(--glass-bg, var(--color-surface-elevated));
     border-radius: 14px;
-    box-shadow: var(--elevation-2), inset 0 1px 0 rgba(255, 255, 255, .6);
+    backdrop-filter: var(--glass-blur, none);
+    -webkit-backdrop-filter: var(--glass-blur, none);
+    border-top: var(--glass-border-top, none);
+    border-left: var(--glass-border-side, none);
+    border-right: var(--glass-border-side, none);
+    border-bottom: var(--glass-border-side, none);
+    box-shadow: var(--glass-shadow, var(--elevation-2));
     padding: var(--sp-5);
     min-height: 420px;
     overflow: hidden;
@@ -31,9 +37,15 @@
 .tablet {
     grid-area: tablet;
     position: relative;
-    background: var(--color-surface-elevated);
+    background: var(--glass-bg, var(--color-surface-elevated));
     border-radius: 14px;
-    box-shadow: var(--elevation-2), inset 0 1px 0 rgba(255, 255, 255, .6);
+    backdrop-filter: var(--glass-blur, none);
+    -webkit-backdrop-filter: var(--glass-blur, none);
+    border-top: var(--glass-border-top, none);
+    border-left: var(--glass-border-side, none);
+    border-right: var(--glass-border-side, none);
+    border-bottom: var(--glass-border-side, none);
+    box-shadow: var(--glass-shadow, var(--elevation-2));
     padding: var(--sp-5);
     min-height: 420px;
     overflow: hidden;
@@ -52,6 +64,7 @@
     height: 0;
     background: var(--color-accent-primary);
     opacity: .18;
+    box-shadow: var(--glow-accent, none);
 }
 
 .toast-host {
@@ -68,9 +81,15 @@
 
 .timeline {
     grid-area: timeline;
-    background: var(--color-surface-elevated);
+    background: var(--glass-bg, var(--color-surface-elevated));
     border-radius: 14px;
-    box-shadow: var(--elevation-1);
+    backdrop-filter: var(--glass-blur, none);
+    -webkit-backdrop-filter: var(--glass-blur, none);
+    border-top: var(--glass-border-top, none);
+    border-left: var(--glass-border-side, none);
+    border-right: var(--glass-border-side, none);
+    border-bottom: var(--glass-border-side, none);
+    box-shadow: var(--glass-shadow, var(--elevation-1));
     padding: var(--sp-4) var(--sp-5);
 }
 

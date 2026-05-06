@@ -1,14 +1,15 @@
 /**
- * Theme_System — applies the light-mode design tokens and exposes reduced-motion
+ * Theme_System — applies the dark-mode design tokens and exposes reduced-motion
  * detection to the Animation_Controller.
  *
  * See design.md "Theme_System".
  */
 
-const THEME_CLASS = 'theme-light';
+const THEME_CLASS = 'theme-dark';
 
 export function applyTheme() {
     if (typeof document === 'undefined') return;
+    document.documentElement.classList.remove('theme-light');
     document.documentElement.classList.add(THEME_CLASS);
 }
 
