@@ -451,7 +451,9 @@ export function startRecognition({ onInterim, onFinal, onError } = {}) {
         }
     };
     rec.onerror = (e) => {
-        if (!stopped) onError && onError(e);
+        if (!stopped && e.error !== 'aborted' && e.error !== 'no-speech') {
+            onError && onError(e);
+        }
     };
     rec.onend = () => {
         if (!stopped) {

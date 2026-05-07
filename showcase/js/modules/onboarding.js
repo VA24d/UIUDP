@@ -233,7 +233,12 @@ function renderProfileTablet(host, step, controller, bus) {
                         }
                     }
                 },
-                onError: (e) => { statusEl.textContent = `Error: ${e.error || e.message || 'unknown'}`; },
+                onError: (e) => {
+                    // 'aborted' and 'no-speech' are normal — don't show as errors
+                    if (e.error === 'aborted' || e.error === 'no-speech') return;
+                    statusEl.textContent = `Mic error: ${e.error || e.message || 'unknown'}. Type your name instead.`;
+                    nameFields.style.display = 'flex';
+                },
             });
         }
         micBtn.addEventListener('click', activateMic);
