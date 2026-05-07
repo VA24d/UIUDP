@@ -283,6 +283,83 @@ function renderUnmappedTablet(host, step, controller, bus) {
     const stop = bus.on('stepWillChange', () => { clearTimeout(t); stop(); });
 }
 
+// ── Shared Grip Mechanic Helper ───────────────────────────────────────
+
+function wireGripMechanic(container, controller, bus) {
+    const GRIP_DURATION = 2000; // 2s hold for fatigue (shorter than takeover)
+    let gripStartTime = null;
+    let gripAnimFrame = null;
+
+    function startGrip() {
+        gripStartTime = Date.now();
+        animateGrip();
+    }
+
+    function releaseGrip() {
+        gripStartTime = null;
+        if (gripAnimFrame) { cancelAnimationFrame(gripAnimFrame); gripAnimFrame = null; }
+        const fill = container.querySelector('[data-grip-fill]');
+        if (fill) fill.style.width = '0%';
+    }
+
+    function animateGrip() {
+        if (!gripStartTime) return;
+        const elapsed = Date.now() - gripStartTime;
+        const progress = Math.min(100, (elapsed / GRIP_DURATION) * 100);
+        const fill = container.querySelector('[data-grip-fill]');
+        if (fill) fill.style.width = `${progress}%`;
+
+        if (progress >= 100) {
+            // Success — driver confirmed awake
+            container.innerHTML = `
+                <div style="text-align:center;padding:var(--sp-3);">
+                    <span style="font-size:32px;color:var(--color-success);">✓</span>
+                    <p style="font-weight:600;color:var(--color-success);margin-top:var(--sp-2);">DRIVER ALERT CONFIRMED</p>
+                </div>
+            `;
+            return;
+        }
+        gripAnimFrame = requestAnimationFrame(animateGrip);
+    }
+
+    const gripBtn = container.querySelector('[data-grip-btn]');
+    if (gripBtn) {
+        gripBtn.addEventListener('mousedown', startGrip);
+        gripBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startGrip(); });
+        gripBtn.addEventListener('mouseup', releaseGrip);
+        gripBtn.addEventListener('mouseleave', releaseGrip);
+        gripBtn.addEventListener('touchend', releaseGrip);
+        gripBtn.addEventListener('touchcancel', releaseGrip);
+    }
+
+    // Spacebar support
+    let spaceHeld = false;
+    function onKeyDown(e) {
+        if (e.code === 'Space' && e.repeat) { e.preventDefault(); return; }
+        if (e.code === 'Space' && !spaceHeld) {
+            e.preventDefault();
+            spaceHeld = true;
+            startGrip();
+        }
+    }
+    function onKeyUp(e) {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            spaceHeld = false;
+            releaseGrip();
+        }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+
+    const offKey = bus.on('stepWillChange', () => {
+        document.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('keyup', onKeyUp);
+        if (gripAnimFrame) { cancelAnimationFrame(gripAnimFrame); gripAnimFrame = null; }
+        offKey();
+    });
+}
+
 // ── Fatigue ───────────────────────────────────────────────────────────
 
 const FATIGUE_LEVELS = [
@@ -318,6 +395,7 @@ function renderFatigueTablet(host, step, controller, bus) {
                     <p class="fatigue-card-caption">${cardData.caption}</p>
                 </div>
             </div>
+            <div data-grip-slot style="display:none;margin-top:var(--sp-3);"></div>
             <div class="step-actions">
                 ${tmShield(s.trust)}
                 <button type="button" role="button" class="btn btn-secondary" data-cta="next">
@@ -329,6 +407,7 @@ function renderFatigueTablet(host, step, controller, bus) {
     host.querySelector('[data-cta="next"]').addEventListener('click', () => controller.advance('driving-next'));
 
     let level = 0;
+    let gripActive = false;
     const tick = setInterval(() => {
         level = Math.min(level + 1, FATIGUE_LEVELS.length - 1);
         const slot = host.querySelector('[data-fatigue-state]');
@@ -343,6 +422,27 @@ function renderFatigueTablet(host, step, controller, bus) {
                     <p class="fatigue-card-caption">${cd.caption}</p>
                 </div>
             `;
+        }
+        // Show grip wheel at level 2+ to confirm driver is awake
+        if (level >= 1 && !gripActive) {
+            gripActive = true;
+            const gripSlot = host.querySelector('[data-grip-slot]');
+            if (gripSlot) {
+                gripSlot.style.display = 'block';
+                gripSlot.innerHTML = `
+                    <div style="text-align:center;">
+                        <div class="tactile-wheel tactile-pulse-1hz" data-tactile-wheel>☸</div>
+                        <div class="drill-grip-area" style="margin-top:var(--sp-3);max-width:260px;margin-left:auto;margin-right:auto;">
+                            <button type="button" class="grip-button" data-grip-btn>
+                                <span class="grip-fill" data-grip-fill style="width:0%"></span>
+                                <span class="grip-label">CONFIRM AWAKE</span>
+                            </button>
+                            <p class="t-caption cluster-context" style="text-align:center;margin-top:var(--sp-2);">Hold to confirm you're alert</p>
+                        </div>
+                    </div>
+                `;
+                wireGripMechanic(gripSlot, controller, bus);
+            }
         }
         bus.emit('timedEvent', { stepIndex: step.globalIndex, eventId: 'fatigue-escalate', payload: { level } });
         if (level >= FATIGUE_LEVELS.length - 1) clearInterval(tick);
