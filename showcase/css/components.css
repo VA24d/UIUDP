@@ -3865,3 +3865,78 @@
 .traffic-reroute-notification {
     animation: hud-alert-in var(--motion-dur-step) var(--motion-ease-forward);
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ENHANCED PREFERENCES PREVIEW — Bolsters, Distance Label, Lead Car
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.preview-lead-car {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 22px;
+    opacity: 0.6;
+    transition: top var(--motion-dur-step) var(--motion-ease-forward);
+}
+
+.preview-dist-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+    transition: top var(--motion-dur-step) var(--motion-ease-forward);
+}
+
+.preview-bolsters {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--motion-dur-step) var(--motion-ease-subtle);
+}
+
+.preview-bolsters.is-active {
+    opacity: 1;
+}
+
+.bolster-bar {
+    width: 3px;
+    height: 100%;
+    border-radius: 2px;
+    background: transparent;
+    transition: background var(--motion-dur-step) var(--motion-ease-subtle),
+        box-shadow var(--motion-dur-step) var(--motion-ease-subtle);
+}
+
+.preview-bolsters.is-active .bolster-bar {
+    background: #FFFFFF;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+    animation: bolster-squeeze 0.8s ease-in-out;
+}
+
+@keyframes bolster-squeeze {
+    0% {
+        transform: scaleX(1);
+    }
+
+    50% {
+        transform: scaleX(2.5);
+    }
+
+    100% {
+        transform: scaleX(1);
+    }
+}

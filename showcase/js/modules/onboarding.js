@@ -248,27 +248,57 @@ function renderProfileTablet(host, step, controller, bus) {
         const status = host.querySelector('[data-face-status]');
         scanningBlocked = true;
 
-        // Demo mode: skip real camera, simulate scan immediately
-        if (video) video.style.display = 'none';
-        status.textContent = 'Scanning face…';
-        ring.classList.add('is-scanning');
+        // Try real camera first, fall back to simulated scan
+        async function startCamera() {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = cameraStream;
+                status.textContent = 'Scanning face…';
+                ring.classList.add('is-scanning');
 
-        // Simulate scan (~2s for demo)
-        setTimeout(() => {
-            ring.classList.remove('is-scanning');
-            ring.classList.add('is-done');
-            check.classList.remove('hidden');
-            status.textContent = 'Face registered ✓';
-            scanningBlocked = false;
-            // HUD alert
-            const alertEl = document.getElementById('hud-alert');
-            const alertText = document.getElementById('hud-alert-text');
-            if (alertEl && alertText) {
-                alertText.textContent = 'Face Registered';
-                alertEl.classList.remove('hidden');
-                setTimeout(() => alertEl.classList.add('hidden'), 2500);
+                // Scan completes after 3s
+                setTimeout(() => {
+                    ring.classList.remove('is-scanning');
+                    ring.classList.add('is-done');
+                    check.classList.remove('hidden');
+                    status.textContent = 'Face registered ✓';
+                    scanningBlocked = false;
+                    // Stop camera
+                    if (cameraStream) {
+                        cameraStream.getTracks().forEach(t => t.stop());
+                        cameraStream = null;
+                    }
+                    // HUD alert
+                    const alertEl = document.getElementById('hud-alert');
+                    const alertText = document.getElementById('hud-alert-text');
+                    if (alertEl && alertText) {
+                        alertText.textContent = 'Face Registered';
+                        alertEl.classList.remove('hidden');
+                        setTimeout(() => alertEl.classList.add('hidden'), 2500);
+                    }
+                }, 3000);
+            } catch (err) {
+                // Camera denied — simulate scan without camera
+                if (video) video.style.display = 'none';
+                status.textContent = 'Scanning face…';
+                ring.classList.add('is-scanning');
+                setTimeout(() => {
+                    ring.classList.remove('is-scanning');
+                    ring.classList.add('is-done');
+                    check.classList.remove('hidden');
+                    status.textContent = 'Face registered ✓';
+                    scanningBlocked = false;
+                    const alertEl = document.getElementById('hud-alert');
+                    const alertText = document.getElementById('hud-alert-text');
+                    if (alertEl && alertText) {
+                        alertText.textContent = 'Face Registered';
+                        alertEl.classList.remove('hidden');
+                        setTimeout(() => alertEl.classList.add('hidden'), 2500);
+                    }
+                }, 2000);
             }
-        }, 2000);
+        }
+        startCamera();
     }
 
     function wirePhase3() {
@@ -1056,13 +1086,20 @@ function renderPreferencesTablet(host, step, controller, bus) {
                     <div class="prefs-preview">
                         <div class="preview-road">
                             <div class="preview-car" style="left:${lanePos}">🚗</div>
-                            <div class="preview-lead-car">🚙</div>
+                            <div class="preview-lead-car" style="top:${dist.id === 'close' ? '30%' : dist.id === 'far' ? '8%' : '18%'}">🚙</div>
+                            <div class="preview-dist-label" style="top:${dist.id === 'close' ? '50%' : dist.id === 'far' ? '35%' : '42%'}">${dist.id === 'close' ? '25m' : dist.id === 'far' ? '45m' : '35m'}</div>
+                            <div class="preview-bolsters ${state.acceleration === 'dynamic' ? 'is-active' : ''}">
+                                <span class="bolster-bar bolster-l"></span>
+                                <span class="bolster-bar bolster-r"></span>
+                            </div>
                         </div>
                         <div class="preview-stats">
                             <span class="preview-stat"><strong>Speed:</strong> ${accel.speed}</span>
                             <span class="preview-stat"><strong>G-Force:</strong> ${accel.gForce}</span>
                             <span class="preview-stat"><strong>Gap:</strong> ${dist.desc}</span>
+                            <span class="preview-stat"><strong>Mode:</strong> ${state.acceleration === 'dynamic' ? '🏎 Sport' : state.acceleration === 'smooth' ? '🌿 Eco' : '⚖️ Balanced'}</span>
                         </div>
+                        ${state.acceleration === 'dynamic' ? '<p class="t-caption" style="color:var(--color-warning);margin-top:var(--sp-1);">⚡ Adaptive bolsters + active seat tilting enabled</p>' : ''}
                     </div>
                 </div>
                 <div class="step-actions">
