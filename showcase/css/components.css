@@ -2118,8 +2118,15 @@
 }
 
 @keyframes autoplay-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -2292,13 +2299,28 @@
     animation: bbox-appear 400ms var(--motion-ease-forward) forwards;
 }
 
-.perception-bbox.is-car { stroke: #4ADE80; }
-.perception-bbox.is-pedestrian { stroke: #FBBF24; }
-.perception-bbox.is-sign { stroke: #60A5FA; }
+.perception-bbox.is-car {
+    stroke: #4ADE80;
+}
+
+.perception-bbox.is-pedestrian {
+    stroke: #FBBF24;
+}
+
+.perception-bbox.is-sign {
+    stroke: #60A5FA;
+}
 
 @keyframes bbox-appear {
-    from { opacity: 0; transform: scale(0.9); }
-    to   { opacity: 1; transform: scale(1); }
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .perception-label {
@@ -2307,7 +2329,7 @@
     font-weight: 600;
     letter-spacing: .05em;
     text-transform: uppercase;
-    fill: rgba(255,255,255,0.8);
+    fill: rgba(255, 255, 255, 0.8);
 }
 
 .perception-range-arc {
@@ -2323,8 +2345,13 @@
 }
 
 @keyframes sweep-rotate {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .perception-count-badge {
@@ -2350,7 +2377,7 @@
     font-weight: 600;
     letter-spacing: .06em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255, 255, 255, 0.5);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -2399,7 +2426,9 @@
 }
 
 @keyframes route-draw {
-    to { stroke-dashoffset: 0; }
+    to {
+        stroke-dashoffset: 0;
+    }
 }
 
 .poi-pin {
@@ -2469,8 +2498,15 @@
 }
 
 @keyframes eta-pop {
-    from { transform: scale(0.95); opacity: 0; }
-    to   { transform: scale(1); opacity: 1; }
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -2519,10 +2555,21 @@
 }
 
 @keyframes noise-flicker {
-    0%  { opacity: 1; }
-    25% { opacity: 0.4; }
-    50% { opacity: 0.8; }
-    75% { opacity: 0.3; }
+    0% {
+        opacity: 1;
+    }
+
+    25% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    75% {
+        opacity: 0.3;
+    }
 }
 
 .weather-status-bar {
@@ -2611,4 +2658,1055 @@
     min-width: 36px;
     text-align: right;
     color: var(--color-text-primary);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TIMELINE PHASE SEPARATORS (Task 2)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.tl-separator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin: 0 var(--sp-3);
+    padding: 0 var(--sp-2);
+    list-style: none;
+}
+
+.tl-separator-line {
+    display: block;
+    width: 1px;
+    height: 18px;
+    background: var(--color-border-strong);
+    opacity: 0.5;
+}
+
+.tl-separator-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+}
+
+/* Tighter intra-stage spacing */
+.tl-item+.tl-item {
+    margin-left: var(--sp-1);
+}
+
+/* Wider gap between stages (separator provides the gap) */
+.tl-separator+.tl-item {
+    margin-left: 0;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   IMPROVED LOCATIONS STEP (Task 3)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.locations-map {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #111827;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(43, 76, 255, 0.2);
+    margin-bottom: var(--sp-3);
+}
+
+.locations-map svg {
+    width: 100%;
+    height: 100%;
+}
+
+.loc-route-line {
+    fill: none;
+    stroke: var(--color-accent-primary);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: route-draw 1.2s var(--motion-ease-forward) 200ms forwards;
+}
+
+.loc-pin {
+    cursor: pointer;
+    transition: transform var(--motion-dur-micro) var(--motion-ease-subtle);
+}
+
+.loc-pin:hover,
+.loc-pin.is-selected {
+    transform: scale(1.2);
+}
+
+.loc-pin-circle {
+    fill: var(--color-accent-primary);
+    stroke: #FFFFFF;
+    stroke-width: 1.5;
+    opacity: 0.9;
+}
+
+.loc-pin.is-selected .loc-pin-circle {
+    fill: #4ADE80;
+    stroke: #FFFFFF;
+}
+
+.loc-pin-icon {
+    font-size: 5px;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+.loc-pin-label {
+    font-size: 4px;
+    font-weight: 600;
+    fill: rgba(255, 255, 255, 0.8);
+    text-anchor: middle;
+}
+
+.loc-dist-label {
+    font-size: 4px;
+    font-weight: 600;
+    fill: rgba(255, 255, 255, 0.5);
+    text-anchor: middle;
+    letter-spacing: 0.04em;
+}
+
+.loc-detail-card {
+    position: absolute;
+    bottom: var(--sp-3);
+    left: var(--sp-3);
+    right: var(--sp-3);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 10px;
+    box-shadow: var(--elevation-2);
+    animation: eta-pop 250ms var(--motion-ease-forward);
+}
+
+.loc-detail-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.loc-detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.loc-detail-body strong {
+    font-size: 14px;
+    color: var(--color-text-primary);
+}
+
+.loc-detail-route {
+    color: var(--color-accent-primary);
+    font-weight: 600;
+}
+
+.loc-add-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-4);
+    border: 2px dashed var(--color-border-strong);
+    border-radius: 10px;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--motion-dur-micro) var(--motion-ease-subtle);
+    width: 100%;
+    justify-content: center;
+}
+
+.loc-add-btn:hover {
+    border-color: var(--color-accent-primary);
+    color: var(--color-accent-primary);
+    background: var(--color-accent-soft);
+}
+
+.loc-add-icon {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RICH UNMAPPED ZONE (Task 4)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.unmapped-zone-map {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #111827;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    margin-bottom: var(--sp-3);
+}
+
+.unmapped-zone-map svg {
+    width: 100%;
+    height: 100%;
+}
+
+.unmapped-road {
+    stroke: #374151;
+    stroke-width: 6;
+    stroke-linecap: round;
+    fill: none;
+}
+
+.construction-boundary {
+    fill: rgba(239, 68, 68, 0.08);
+    stroke: rgba(239, 68, 68, 0.6);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 2;
+}
+
+.unmapped-zone-label {
+    font-size: 4px;
+    font-weight: 700;
+    fill: rgba(239, 68, 68, 0.8);
+    letter-spacing: 0.1em;
+}
+
+.takeover-countdown-ring {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: var(--sp-3) auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.takeover-countdown-ring svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.takeover-countdown-ring .countdown-track {
+    fill: none;
+    stroke: rgba(185, 28, 28, 0.15);
+    stroke-width: 5;
+}
+
+.takeover-countdown-ring .countdown-progress {
+    fill: none;
+    stroke: var(--color-critical);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-dasharray: 213.6;
+    stroke-dashoffset: 0;
+}
+
+.takeover-ring-anim {
+    animation: takeover-ring-deplete 10s linear forwards;
+}
+
+@keyframes takeover-ring-deplete {
+    from {
+        stroke-dashoffset: 0;
+    }
+
+    to {
+        stroke-dashoffset: 213.6;
+    }
+}
+
+.takeover-countdown-ring .countdown-number {
+    font-family: var(--font-family-mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-critical);
+    z-index: 1;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TASK 5: Fatigue Escalation Panel
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.fatigue-card {
+    padding: var(--sp-5);
+    border-radius: 12px;
+    display: flex;
+    gap: var(--sp-4);
+    align-items: flex-start;
+    border: 2px solid transparent;
+    transition: background 500ms, color 500ms, border-color 500ms;
+}
+
+.fatigue-card-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+.fatigue-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+}
+
+.fatigue-card-title {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+}
+
+.fatigue-card-desc {
+    font-size: var(--font-body-size);
+    color: var(--color-text-secondary);
+}
+
+.fatigue-card-caption {
+    font-size: var(--font-caption-size);
+    font-weight: 600;
+    letter-spacing: var(--font-caption-tracking);
+    text-transform: var(--font-caption-transform);
+}
+
+/* Level 1 — Green/soft */
+.fatigue-level-1 {
+    background: rgba(31, 122, 76, 0.08);
+    border-color: rgba(31, 122, 76, 0.3);
+}
+
+.fatigue-level-1 .fatigue-card-title {
+    color: var(--color-success);
+}
+
+.fatigue-level-1 .fatigue-card-caption {
+    color: var(--color-success);
+}
+
+/* Level 2 — Amber/warning */
+.fatigue-level-2 {
+    background: rgba(180, 83, 9, 0.1);
+    border-color: rgba(180, 83, 9, 0.5);
+}
+
+.fatigue-level-2 .fatigue-card-title {
+    color: var(--color-warning);
+}
+
+.fatigue-level-2 .fatigue-card-caption {
+    color: var(--color-warning);
+}
+
+/* Level 3 — Red/critical */
+.fatigue-level-3 {
+    background: rgba(185, 28, 28, 0.12);
+    border-color: rgba(185, 28, 28, 0.6);
+    animation: fatigue-critical-pulse 800ms ease-in-out infinite;
+}
+
+.fatigue-level-3 .fatigue-card-title {
+    color: var(--color-critical);
+}
+
+.fatigue-level-3 .fatigue-card-caption {
+    color: var(--color-critical);
+}
+
+@keyframes fatigue-critical-pulse {
+
+    0%,
+    100% {
+        background: rgba(185, 28, 28, 0.12);
+    }
+
+    50% {
+        background: rgba(185, 28, 28, 0.2);
+    }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TASK 6: Range Math Bar + ADAS Routing
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.range-math-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--color-surface-subtle);
+    border-radius: 10px;
+    border: 1px solid var(--color-border-subtle);
+}
+
+.range-math-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    text-align: center;
+}
+
+.range-math-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+}
+
+.range-math-value {
+    font-family: var(--font-family-mono);
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.range-math-ok {
+    color: var(--color-success);
+}
+
+.range-math-warn {
+    color: var(--color-warning);
+}
+
+.range-math-critical {
+    color: var(--color-critical);
+}
+
+.range-math-divider {
+    font-size: 16px;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+}
+
+/* Route corridors — color-coded by autonomy zone */
+.route-corridor {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: 0.7;
+}
+
+.route-corridor.sz-green {
+    stroke: var(--color-success);
+}
+
+.route-corridor.sz-yellow {
+    stroke: var(--color-warning);
+}
+
+.route-corridor.sz-red {
+    stroke: var(--color-critical);
+}
+
+/* Route candidates (fade in during selection animation) */
+.route-candidate {
+    fill: none;
+    stroke: var(--color-text-secondary);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+    opacity: 0;
+    transition: opacity 400ms ease;
+}
+
+/* Selected route with pulse */
+.route-selected {
+    fill: none;
+    stroke: var(--color-accent-primary);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    opacity: 0;
+    transition: opacity 500ms ease;
+}
+
+.route-selected-pulse {
+    animation: route-pulse 2s ease-in-out infinite;
+}
+
+@keyframes route-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* ADAS coverage label */
+.adas-coverage-label {
+    position: absolute;
+    bottom: var(--sp-2);
+    right: var(--sp-2);
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(43, 76, 255, 0.15);
+    color: var(--color-accent-primary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    animation: fadeIn 400ms ease-out;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TASK 7: Smart POI Injections
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.poi-relevance-badge {
+    opacity: 0.9;
+}
+
+.poi-fade-in {
+    animation: poi-fade-in 300ms ease-out both;
+}
+
+@keyframes poi-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pulsing border on charger POIs */
+.poi-pulse .pin-bg {
+    animation: poi-charger-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes poi-charger-pulse {
+
+    0%,
+    100% {
+        stroke: rgba(16, 185, 129, 0.4);
+        stroke-width: 1;
+    }
+
+    50% {
+        stroke: rgba(16, 185, 129, 0.9);
+        stroke-width: 2.5;
+    }
+}
+
+.poi-tooltip-type {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--color-surface-subtle);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.poi-tooltip-reason {
+    font-size: 11px;
+    font-style: italic;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TASK 8: Perception HUD Overlay Enhancements
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.perception-bbox-enter {
+    animation: perception-bbox-fade-in 300ms ease-out both;
+}
+
+@keyframes perception-bbox-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.perception-bbox-exit {
+    animation: perception-bbox-fade-out 250ms ease-in forwards;
+}
+
+@keyframes perception-bbox-fade-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+/* Continuous range sweep rotation */
+.perception-range-sweep {
+    transform-origin: 50px 61px;
+    animation: perception-sweep 4s linear infinite;
+}
+
+@keyframes perception-sweep {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TASK 9: Smart Distraction Nudge
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.nudge-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: 10px;
+    background: rgba(180, 83, 9, 0.1);
+    border: 1px solid var(--color-warning);
+    animation: nudge-slide-in 400ms ease-out;
+}
+
+.nudge-banner-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.nudge-banner-text {
+    font-size: var(--font-body-size);
+    font-weight: 600;
+    color: var(--color-warning);
+}
+
+@keyframes nudge-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nudge-active {
+    /* Subtle amber tint on the whole tablet step */
+}
+
+/* Autonomy budget bar */
+.autonomy-budget-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    margin-top: var(--sp-2);
+}
+
+.autonomy-budget-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--color-success);
+    transition: width 1.5s ease-out, background 500ms;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TASK 10: Contextual Safe-Zone Indicator
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.safe-zone-bar {
+    position: relative;
+    display: flex;
+    height: 10px;
+    border-radius: 5px;
+    overflow: visible;
+    margin-top: var(--sp-3);
+    gap: 1px;
+}
+
+.sz-segment {
+    border-radius: 5px;
+    height: 100%;
+}
+
+.sz-green {
+    background: linear-gradient(90deg, rgba(31, 122, 76, 0.6), rgba(31, 122, 76, 0.8));
+}
+
+.sz-yellow {
+    background: linear-gradient(90deg, rgba(180, 83, 9, 0.5), rgba(180, 83, 9, 0.7));
+}
+
+.sz-red {
+    background: linear-gradient(90deg, rgba(185, 28, 28, 0.5), rgba(185, 28, 28, 0.7));
+}
+
+.sz-marker {
+    position: absolute;
+    top: -4px;
+    width: 8px;
+    height: 18px;
+    border-radius: 4px;
+    background: var(--color-text-primary);
+    border: 2px solid var(--color-surface-elevated);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    transform: translateX(-50%);
+    transition: left 600ms ease;
+}
+
+.sz-label {
+    position: absolute;
+    top: 14px;
+    transform: translateX(-50%);
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+}
+
+
+/* ── Generic fade-in keyframe ─────────────────────────────────────────── */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Task 11: Tactile Overrides for Takeover Drill
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Steering wheel icon */
+.tactile-wheel {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: var(--sp-2);
+    display: block;
+    width: fit-content;
+    margin-inline: auto;
+    border-radius: 50%;
+    padding: var(--sp-2);
+    transition: box-shadow 300ms ease;
+}
+
+.tactile-wheel.tactile-success {
+    animation: none !important;
+    color: var(--color-success, #10B981);
+    box-shadow: none;
+}
+
+/* Pulse animations at different frequencies */
+@keyframes tactile-pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.12);
+        opacity: 0.85;
+    }
+}
+
+.tactile-pulse-1hz {
+    animation: tactile-pulse 1s ease-in-out infinite;
+}
+
+.tactile-pulse-2hz {
+    animation: tactile-pulse 0.5s ease-in-out infinite;
+}
+
+.tactile-pulse-3hz {
+    animation: tactile-pulse 0.333s ease-in-out infinite;
+}
+
+/* Red glow for critical countdown (≤3s) */
+.tactile-glow {
+    box-shadow: 0 0 16px 4px rgba(239, 68, 68, 0.6), 0 0 32px 8px rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+/* Seat vibration indicators */
+.seat-vibrate-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    justify-content: center;
+}
+
+.seat-vibrate {
+    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm, 4px);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    animation: seat-shake 0.15s ease-in-out infinite alternate;
+}
+
+@keyframes seat-shake {
+    0% {
+        transform: translateX(-1.5px) translateY(0.5px);
+    }
+
+    25% {
+        transform: translateX(1px) translateY(-0.5px);
+    }
+
+    50% {
+        transform: translateX(-0.5px) translateY(1px);
+    }
+
+    75% {
+        transform: translateX(1.5px) translateY(-1px);
+    }
+
+    100% {
+        transform: translateX(1px) translateY(0.5px);
+    }
+}
+
+.seat-vibrate-left {
+    color: var(--color-warning, #F59E0B);
+}
+
+.seat-vibrate-right {
+    color: var(--color-warning, #F59E0B);
+}
+
+/* Haptic feedback icon in cluster */
+.haptic-icon {
+    position: absolute;
+    bottom: var(--sp-2);
+    right: var(--sp-2);
+    font-size: 1.25rem;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+
+    .tactile-pulse-1hz,
+    .tactile-pulse-2hz,
+    .tactile-pulse-3hz,
+    .seat-vibrate,
+    .haptic-icon {
+        animation: none;
+    }
+
+    .tactile-glow {
+        box-shadow: 0 0 8px 2px rgba(239, 68, 68, 0.4);
+    }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Task 12: Simulation Mode Preview
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.sim-preview {
+    position: relative;
+}
+
+.sim-road {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(180deg, #1a1a2e 0%, #2d2d44 100%);
+    border-radius: var(--radius-md, 8px);
+    overflow: hidden;
+    margin: var(--sp-3) 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Lane markings */
+.sim-lane-marking {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: repeating-linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.5) 0px,
+            rgba(255, 255, 255, 0.5) 16px,
+            transparent 16px,
+            transparent 32px);
+}
+
+.sim-lane-left {
+    left: 15%;
+}
+
+.sim-lane-right {
+    right: 15%;
+}
+
+.sim-lane-center-left {
+    left: 37%;
+}
+
+.sim-lane-center-right {
+    right: 37%;
+}
+
+/* Cars */
+.sim-car {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.75rem;
+    transition: bottom 2s ease-in-out, left 2s ease-in-out;
+    z-index: 2;
+}
+
+.sim-car.sim-accel-fast {
+    transition-duration: 1.2s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sim-car.sim-accel-slow {
+    transition-duration: 2.8s;
+    transition-timing-function: ease-out;
+}
+
+.sim-car.sim-accel-normal {
+    transition-duration: 2s;
+    transition-timing-function: ease-in-out;
+}
+
+.sim-car.sim-lane-change {
+    transition: left 1.8s cubic-bezier(0.4, 0, 0.2, 1), bottom 2s ease-in-out;
+}
+
+.sim-lead-car {
+    position: absolute;
+    bottom: 60%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: opacity 800ms ease, bottom 1.5s ease-in-out;
+    z-index: 1;
+}
+
+/* Phase label */
+.sim-phase-label {
+    position: absolute;
+    top: var(--sp-2);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px 10px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+/* Progress bar */
+.sim-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: var(--sp-2) 0;
+}
+
+.sim-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--color-primary, #2B4CFF), #10B981);
+    border-radius: 2px;
+    transition: width 100ms linear;
+}
+
+/* Skip button */
+.sim-skip-btn {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    transition: opacity 200ms;
+}
+
+.sim-skip-btn:hover {
+    opacity: 1;
+}
+
+/* Cluster SIMULATION mode label */
+.sim-mode-label {
+    color: #10B981 !important;
+    background: rgba(16, 185, 129, 0.15) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    padding: 2px 8px;
+    border-radius: 4px;
+    animation: sim-label-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes sim-label-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Reduced motion for simulation */
+@media (prefers-reduced-motion: reduce) {
+
+    .sim-car,
+    .sim-lead-car {
+        transition-duration: 0.01s !important;
+    }
+
+    .sim-mode-label {
+        animation: none;
+    }
 }

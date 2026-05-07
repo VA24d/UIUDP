@@ -22,7 +22,19 @@ export function createTimeline({ bus, steps, controller, host }) {
             const state = visualStateClass(i, active);
             const ariaCurrent = i === active ? 'step' : 'false';
             const label = `${s.stage} — ${s.label}`;
-            return `
+
+            // Detect stage boundary: inject separator before this node
+            let separator = '';
+            if (i > 0 && steps[i].stage !== steps[i - 1].stage) {
+                separator = `
+                    <li class="tl-separator" aria-hidden="true">
+                        <span class="tl-separator-line"></span>
+                        <span class="tl-separator-label">${steps[i].stage}</span>
+                    </li>
+                `;
+            }
+
+            return `${separator}
                 <li class="tl-item" role="listitem">
                     <button
                         type="button"

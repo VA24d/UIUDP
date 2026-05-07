@@ -488,23 +488,38 @@ function renderComfortTablet(host, step, controller, bus) {
 }
 
 function renderLocationsTablet(host, step, controller) {
+    const locations = [
+        { id: 'home', icon: '🏠', name: 'Home', address: '314 Pine St, Apt 4B', x: 18, y: 35, eta: '12 min', dist: '4.2 km' },
+        { id: 'work', icon: '💼', name: 'Work', address: '2 Market Plaza, Floor 8', x: 82, y: 28, eta: '28 min', dist: '11.7 km' },
+    ];
+
+    const pinsHtml = locations.map(loc => `
+        <g class="loc-pin" data-loc="${loc.id}" role="button" tabindex="0" aria-label="${loc.name} — ${loc.address}">
+            <circle cx="${loc.x}" cy="${loc.y}" r="5" class="loc-pin-circle"/>
+            <text x="${loc.x}" y="${loc.y + 1.5}" class="loc-pin-icon">${loc.icon}</text>
+            <text x="${loc.x}" y="${loc.y + 10}" class="loc-pin-label">${loc.name}</text>
+        </g>
+    `).join('');
+
     host.innerHTML = `
         <div class="tablet-step">
             <p class="t-caption step-meta">Onboarding · 3 / 6</p>
             <h2 class="step-title">${step.title}</h2>
             <p class="step-purpose">${ONBOARDING_PURPOSES.locations}</p>
-            <div style="display:flex;flex-direction:column;gap:var(--sp-2);">
-                <label style="display:flex;gap:var(--sp-3);align-items:center;padding:var(--sp-3);background:var(--color-surface-subtle);border-radius:10px;">
-                    <span style="font-size:20px;">🏠</span>
-                    <span style="flex:1">Home</span>
-                    <span class="t-caption">314 Pine St</span>
-                </label>
-                <label style="display:flex;gap:var(--sp-3);align-items:center;padding:var(--sp-3);background:var(--color-surface-subtle);border-radius:10px;">
-                    <span style="font-size:20px;">💼</span>
-                    <span style="flex:1">Work</span>
-                    <span class="t-caption">2 Market Plaza</span>
-                </label>
+            <div class="locations-map">
+                <svg viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet">
+                    <!-- Route line connecting Home to Work -->
+                    <path class="loc-route-line" d="M${locations[0].x},${locations[0].y} C35,20 65,18 ${locations[1].x},${locations[1].y}"/>
+                    <!-- Distance annotation -->
+                    <text x="50" y="16" class="loc-dist-label">11.7 km · 28 min</text>
+                    <!-- Location pins -->
+                    ${pinsHtml}
+                </svg>
+                <div class="loc-detail-card" data-detail-card style="display:none;"></div>
             </div>
+            <button type="button" class="btn btn-ghost loc-add-btn" data-add-loc>
+                <span class="loc-add-icon">+</span> Add location
+            </button>
             <div class="step-actions">
                 ${tmShield(step.trustMoments)}
                 <button type="button" role="button" class="btn btn-primary" data-cta="onboarding-advance">
@@ -513,6 +528,45 @@ function renderLocationsTablet(host, step, controller) {
             </div>
         </div>
     `;
+
+    // Pin click/focus handlers
+    const detailCard = host.querySelector('[data-detail-card]');
+    host.querySelectorAll('.loc-pin').forEach(pin => {
+        const id = pin.dataset.loc;
+        const loc = locations.find(l => l.id === id);
+        if (!loc) return;
+
+        function showDetail() {
+            if (!detailCard) return;
+            detailCard.innerHTML = `
+                <span class="loc-detail-icon">${loc.icon}</span>
+                <div class="loc-detail-body">
+                    <strong>${loc.name}</strong>
+                    <span class="t-caption">${loc.address}</span>
+                    <span class="t-caption loc-detail-route">${loc.dist} · ${loc.eta} drive</span>
+                </div>
+            `;
+            detailCard.style.display = 'flex';
+            host.querySelectorAll('.loc-pin').forEach(p => p.classList.remove('is-selected'));
+            pin.classList.add('is-selected');
+        }
+        pin.addEventListener('click', showDetail);
+        pin.addEventListener('focus', showDetail);
+    });
+
+    // Add location button
+    const addBtn = host.querySelector('[data-add-loc]');
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            addBtn.textContent = '✓ Location added';
+            addBtn.disabled = true;
+            setTimeout(() => {
+                addBtn.innerHTML = '<span class="loc-add-icon">+</span> Add location';
+                addBtn.disabled = false;
+            }, 2000);
+        });
+    }
+
     host.querySelector('[data-cta="onboarding-advance"]').addEventListener('click', () =>
         completeThenAdvance(host, controller, 'onboarding-locations-cta')
     );
@@ -657,8 +711,10 @@ function renderTakeoverDrillTablet(host, step, controller, bus) {
         } else if (stage === 'warning') {
             const pct = (remaining / COUNTDOWN_SECS) * 100;
             const isUrgent = remaining <= 3;
+            const pulseClass = remaining <= 3 ? 'tactile-pulse-3hz tactile-glow' : remaining <= 5 ? 'tactile-pulse-2hz' : 'tactile-pulse-1hz';
             stageContent = `
                 <div class="drill-stage drill-warning">
+                    <div class="tactile-wheel ${pulseClass}" data-tactile-wheel>☸</div>
                     <div class="drill-countdown-ring">
                         <svg viewBox="0 0 120 120" class="countdown-svg">
                             <circle cx="60" cy="60" r="54" class="countdown-track" />
@@ -666,12 +722,16 @@ function renderTakeoverDrillTablet(host, step, controller, bus) {
                         </svg>
                         <span class="countdown-number ${isUrgent ? 'is-urgent' : ''}">${remaining}</span>
                     </div>
-                    <div class="drill-grip-area">
-                        <button type="button" class="grip-button" data-grip-btn>
-                            <span class="grip-fill" data-grip-fill style="width:${gripProgress}%"></span>
-                            <span class="grip-label">GRIP STEERING WHEEL</span>
-                        </button>
-                        <p class="t-caption cluster-context">Press and hold (or spacebar)</p>
+                    <div class="seat-vibrate-row">
+                        <div class="seat-vibrate seat-vibrate-left" data-seat-left>◧</div>
+                        <div class="drill-grip-area">
+                            <button type="button" class="grip-button" data-grip-btn>
+                                <span class="grip-fill" data-grip-fill style="width:${gripProgress}%"></span>
+                                <span class="grip-label">GRIP STEERING WHEEL</span>
+                            </button>
+                            <p class="t-caption cluster-context">Press and hold (or spacebar)</p>
+                        </div>
+                        <div class="seat-vibrate seat-vibrate-right" data-seat-right>◨</div>
                     </div>
                     <p class="drill-attempt">ATTEMPT ${attempt}</p>
                 </div>`;
@@ -737,6 +797,19 @@ function renderTakeoverDrillTablet(host, step, controller, bus) {
             alertEl.classList.remove('hidden');
         }
 
+        // Add haptic icon to cluster
+        const clusterHost = document.querySelector('[data-cluster-host]') || document.getElementById('cluster-host');
+        if (clusterHost) {
+            let hapticIcon = clusterHost.querySelector('.haptic-icon');
+            if (!hapticIcon) {
+                hapticIcon = document.createElement('div');
+                hapticIcon.className = 'haptic-icon tactile-pulse-1hz';
+                hapticIcon.textContent = '📳';
+                hapticIcon.setAttribute('aria-label', 'Haptic feedback active');
+                clusterHost.appendChild(hapticIcon);
+            }
+        }
+
         countdownInterval = setInterval(() => {
             remaining--;
             bus.emit('timedEvent', { stepIndex: step.globalIndex, eventId: 'takeover-tick', payload: { remaining } });
@@ -755,6 +828,33 @@ function renderTakeoverDrillTablet(host, step, controller, bus) {
                 if (progEl) {
                     const pct = (remaining / COUNTDOWN_SECS) * 100;
                     progEl.style.strokeDashoffset = 339.3 - (339.3 * pct / 100);
+                }
+                // Update tactile pulse frequency
+                const wheelEl = host.querySelector('[data-tactile-wheel]');
+                if (wheelEl) {
+                    wheelEl.classList.remove('tactile-pulse-1hz', 'tactile-pulse-2hz', 'tactile-pulse-3hz', 'tactile-glow');
+                    if (remaining <= 3) {
+                        wheelEl.classList.add('tactile-pulse-3hz', 'tactile-glow');
+                    } else if (remaining <= 5) {
+                        wheelEl.classList.add('tactile-pulse-2hz');
+                    } else {
+                        wheelEl.classList.add('tactile-pulse-1hz');
+                    }
+                }
+                // Sync haptic icon in cluster
+                const clusterHost = document.querySelector('[data-cluster-host]') || document.getElementById('cluster-host');
+                if (clusterHost) {
+                    const hapticIcon = clusterHost.querySelector('.haptic-icon');
+                    if (hapticIcon) {
+                        hapticIcon.classList.remove('tactile-pulse-1hz', 'tactile-pulse-2hz', 'tactile-pulse-3hz', 'tactile-glow');
+                        if (remaining <= 3) {
+                            hapticIcon.classList.add('tactile-pulse-3hz', 'tactile-glow');
+                        } else if (remaining <= 5) {
+                            hapticIcon.classList.add('tactile-pulse-2hz');
+                        } else {
+                            hapticIcon.classList.add('tactile-pulse-1hz');
+                        }
+                    }
                 }
             }
         }, 1000);
@@ -799,11 +899,23 @@ function renderTakeoverDrillTablet(host, step, controller, bus) {
         gripBtn.addEventListener('touchcancel', releaseGrip);
 
         // Spacebar support
+        let spaceHeld = false;
         function onKeyDown(e) {
-            if (e.code === 'Space' && stage === 'warning') { e.preventDefault(); startGrip(); }
+            if (e.code === 'Space' && e.repeat) { e.preventDefault(); return; }
+            if (e.code === 'Space' && stage === 'warning' && !spaceHeld) {
+                e.preventDefault();
+                spaceHeld = true;
+                startGrip();
+            } else if (e.code === 'Space') {
+                e.preventDefault(); // prevent scroll
+            }
         }
         function onKeyUp(e) {
-            if (e.code === 'Space' && stage === 'warning') { e.preventDefault(); releaseGrip(); }
+            if (e.code === 'Space' && stage === 'warning') {
+                e.preventDefault();
+                spaceHeld = false;
+                releaseGrip();
+            }
         }
         document.addEventListener('keydown', onKeyDown);
         document.addEventListener('keyup', onKeyUp);
@@ -812,6 +924,7 @@ function renderTakeoverDrillTablet(host, step, controller, bus) {
         const offKey = bus.on('stepWillChange', () => {
             document.removeEventListener('keydown', onKeyDown);
             document.removeEventListener('keyup', onKeyUp);
+            spaceHeld = false;
             offKey();
         });
     }
@@ -821,6 +934,25 @@ function renderTakeoverDrillTablet(host, step, controller, bus) {
         if (gripAnimFrame) { cancelAnimationFrame(gripAnimFrame); gripAnimFrame = null; }
         responseTime = Date.now() - countdownStartTime;
         stage = 'success';
+
+        // Stop all tactile animations immediately
+        const wheelEl = host.querySelector('[data-tactile-wheel]');
+        if (wheelEl) {
+            wheelEl.classList.remove('tactile-pulse-1hz', 'tactile-pulse-2hz', 'tactile-pulse-3hz', 'tactile-glow');
+            wheelEl.classList.add('tactile-success');
+        }
+        const seatLeft = host.querySelector('[data-seat-left]');
+        const seatRight = host.querySelector('[data-seat-right]');
+        if (seatLeft) seatLeft.classList.remove('seat-vibrate');
+        if (seatRight) seatRight.classList.remove('seat-vibrate');
+
+        // Remove haptic icon from cluster
+        const clusterHost = document.querySelector('[data-cluster-host]') || document.getElementById('cluster-host');
+        if (clusterHost) {
+            const hapticIcon = clusterHost.querySelector('.haptic-icon');
+            if (hapticIcon) hapticIcon.remove();
+        }
+
         render();
 
         // HUD
@@ -970,9 +1102,19 @@ function renderPreferencesTablet(host, step, controller, bus) {
         host.querySelectorAll('[data-lane]').forEach(btn => {
             btn.addEventListener('click', () => { state.lane = btn.dataset.lane; syncHUD(); render(); });
         });
-        host.querySelector('[data-cta="onboarding-advance"]').addEventListener('click', () =>
-            completeThenAdvance(host, controller, 'onboarding-prefs-cta')
-        );
+        host.querySelector('[data-cta="onboarding-advance"]').addEventListener('click', () => {
+            // Show completion pill (for test contract + visual feedback)
+            const actions = host.querySelector('.step-actions');
+            if (actions) {
+                const pill = document.createElement('span');
+                pill.className = 'is-complete';
+                pill.setAttribute('role', 'status');
+                pill.textContent = 'Done';
+                actions.appendChild(pill);
+            }
+            // After brief delay, show simulation preview instead of advancing directly
+            setTimeout(() => renderSimulationPreview(host, state, controller, bus), 350);
+        });
     }
 
     function syncHUD() {
@@ -1006,6 +1148,159 @@ function renderPreferencesTablet(host, step, controller, bus) {
     const offCleanup = bus.on('stepWillChange', () => { offCleanup(); });
 
     render();
+}
+
+/**
+ * Simulation Mode Preview — renders a brief animated driving preview
+ * after the user saves preferences, before advancing to the first Driving step.
+ * Shows three sequential maneuvers: accelerate, follow, lane change (~8s total).
+ */
+function renderSimulationPreview(host, prefs, controller, bus) {
+    const TOTAL_DURATION = 8000; // 8 seconds total
+    const PHASE_ACCEL = 2700;   // accelerate phase
+    const PHASE_FOLLOW = 2700;  // follow phase
+    const PHASE_LANE = 2600;    // lane change phase
+
+    let animTimer = null;
+    let progressTimer = null;
+    let autoAdvanceTimer = null;
+    let cancelled = false;
+
+    // Map preferences to animation parameters
+    const accelSpeed = prefs.acceleration === 'dynamic' ? 'fast' : prefs.acceleration === 'smooth' ? 'slow' : 'normal';
+    const followGap = prefs.distance === 'close' ? 'tight' : prefs.distance === 'far' ? 'wide' : 'medium';
+    const laneTarget = prefs.lane === 'left' ? '25%' : prefs.lane === 'right' ? '75%' : '50%';
+    const laneStart = '50%'; // always start center
+
+    // Update cluster to show SIMULATION mode
+    const clusterHost = document.querySelector('[data-cluster-host]') || document.getElementById('cluster-host');
+    let prevClusterContent = '';
+    if (clusterHost) {
+        prevClusterContent = clusterHost.innerHTML;
+        const autonomyPill = clusterHost.querySelector('.cluster-autonomy');
+        if (autonomyPill) {
+            autonomyPill.textContent = 'SIMULATION';
+            autonomyPill.classList.add('sim-mode-label');
+        }
+    }
+
+    host.innerHTML = `
+        <div class="tablet-step sim-preview">
+            <p class="t-caption step-meta">Simulation Preview</p>
+            <h2 class="step-title">Your Drive Style in Action</h2>
+            <p class="step-purpose">Previewing your preferences: ${prefs.acceleration} acceleration · ${prefs.distance} gap · ${prefs.lane} lane</p>
+            <div class="sim-road" data-sim-road>
+                <div class="sim-lane-marking sim-lane-left"></div>
+                <div class="sim-lane-marking sim-lane-right"></div>
+                <div class="sim-lane-marking sim-lane-center-left"></div>
+                <div class="sim-lane-marking sim-lane-center-right"></div>
+                <div class="sim-lead-car" data-sim-lead>🚙</div>
+                <div class="sim-car" data-sim-car style="left:${laneStart}">🚗</div>
+                <div class="sim-phase-label" data-sim-phase>Accelerating…</div>
+            </div>
+            <div class="sim-progress-bar" data-sim-progress>
+                <div class="sim-progress-fill" data-sim-fill></div>
+            </div>
+            <div class="step-actions">
+                <button type="button" class="btn btn-ghost sim-skip-btn" data-sim-skip>Skip preview</button>
+            </div>
+        </div>
+    `;
+
+    const carEl = host.querySelector('[data-sim-car]');
+    const leadEl = host.querySelector('[data-sim-lead]');
+    const phaseLabel = host.querySelector('[data-sim-phase]');
+    const progressFill = host.querySelector('[data-sim-fill]');
+    const skipBtn = host.querySelector('[data-sim-skip]');
+
+    // Progress bar animation
+    const startTime = Date.now();
+    progressTimer = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const pct = Math.min(100, (elapsed / TOTAL_DURATION) * 100);
+        if (progressFill) progressFill.style.width = `${pct}%`;
+    }, 50);
+
+    // Phase 1: Accelerate from stop
+    if (carEl) {
+        carEl.classList.add('sim-accel-' + accelSpeed);
+        carEl.style.bottom = '15%';
+    }
+    if (leadEl) {
+        leadEl.style.bottom = '60%';
+        leadEl.style.left = '50%';
+        leadEl.style.opacity = '0';
+    }
+
+    // Animate: car moves up (accelerates)
+    setTimeout(() => {
+        if (cancelled) return;
+        if (carEl) carEl.style.bottom = '35%';
+    }, 200);
+
+    // Phase 2: Follow lead vehicle
+    animTimer = setTimeout(() => {
+        if (cancelled) return;
+        if (phaseLabel) phaseLabel.textContent = 'Following lead vehicle…';
+        if (leadEl) {
+            leadEl.style.opacity = '1';
+            const gapOffset = followGap === 'tight' ? '55%' : followGap === 'wide' ? '72%' : '62%';
+            leadEl.style.bottom = gapOffset;
+        }
+        if (carEl) carEl.style.bottom = '35%';
+    }, PHASE_ACCEL);
+
+    // Phase 3: Lane change
+    setTimeout(() => {
+        if (cancelled) return;
+        if (phaseLabel) phaseLabel.textContent = 'Changing lanes…';
+        if (carEl) {
+            carEl.style.left = laneTarget;
+            carEl.classList.add('sim-lane-change');
+        }
+    }, PHASE_ACCEL + PHASE_FOLLOW);
+
+    // Auto-advance after animation completes
+    autoAdvanceTimer = setTimeout(() => {
+        if (cancelled) return;
+        finishPreview();
+    }, TOTAL_DURATION);
+
+    // Skip button
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            if (cancelled) return;
+            finishPreview();
+        });
+    }
+
+    function finishPreview() {
+        cancelled = true;
+        if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+        if (animTimer) { clearTimeout(animTimer); animTimer = null; }
+        if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; }
+
+        // Revert cluster SIMULATION label
+        if (clusterHost) {
+            const autonomyPill = clusterHost.querySelector('.cluster-autonomy');
+            if (autonomyPill) {
+                autonomyPill.textContent = 'STATIONARY';
+                autonomyPill.classList.remove('sim-mode-label');
+            }
+        }
+
+        // Advance to next step (first Driving step)
+        controller.advance('simulation-preview-complete');
+    }
+
+    // Cleanup on step change (in case something else forces a step change)
+    const offCleanup = bus.on('stepWillChange', () => {
+        cancelled = true;
+        if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+        if (animTimer) { clearTimeout(animTimer); animTimer = null; }
+        if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; }
+        offCleanup();
+    });
 }
 
 /** Build the 6 onboarding step overrides. */

@@ -69,9 +69,27 @@ function renderUnmappedTablet(host, step, controller, bus) {
             <p class="t-caption step-meta">Driving · Unmapped zone</p>
             <h2 class="step-title">${s.title}</h2>
             <p class="step-purpose">${s.intent}</p>
+            <div class="unmapped-zone-map">
+                <svg viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet">
+                    <!-- Road -->
+                    <path class="unmapped-road" d="M5,40 L40,40 L60,40 L95,40"/>
+                    <!-- Construction zone boundary (hatched) -->
+                    <rect class="construction-boundary" x="42" y="20" width="30" height="30" rx="3"/>
+                    <pattern id="hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+                        <line x1="0" y1="0" x2="0" y2="6" stroke="rgba(239,68,68,0.4)" stroke-width="2"/>
+                    </pattern>
+                    <rect x="42" y="20" width="30" height="30" rx="3" fill="url(#hatch)" opacity="0.6"/>
+                    <!-- Construction icon -->
+                    <text x="57" y="37" text-anchor="middle" font-size="8">🚧</text>
+                    <!-- Vehicle position -->
+                    <rect x="28" y="37" width="8" height="5" rx="1.5" fill="var(--color-accent-primary)"/>
+                    <!-- Zone label -->
+                    <text x="57" y="15" text-anchor="middle" class="unmapped-zone-label">UNMAPPED ZONE</text>
+                </svg>
+            </div>
             <div data-prompt-slot style="padding:var(--sp-4);background:var(--color-surface-subtle);border-radius:12px;">
                 <p class="t-caption">Autonomous · monitoring zone</p>
-                <p style="margin-top:var(--sp-2);">The system will hand control back in a moment. No action needed yet.</p>
+                <p style="margin-top:var(--sp-2);">Zone not mapped — construction detected. The system will hand control back in a moment.</p>
             </div>
             <div class="step-actions">
                 ${tmShield(s.trust)}
@@ -90,11 +108,28 @@ function renderUnmappedTablet(host, step, controller, bus) {
             slot.style.border = '2px solid var(--color-critical)';
             slot.innerHTML = `
                 <p class="t-caption" style="color:var(--color-critical);font-weight:700;">TAKE MANUAL CONTROL</p>
-                <p style="margin-top:var(--sp-2);">Construction detected. Reason: zone not mapped.</p>
+                <p style="margin-top:var(--sp-2);">Zone not mapped — construction detected.</p>
+                <div class="takeover-countdown-ring" data-countdown-ring>
+                    <svg viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="34" class="countdown-track"/>
+                        <circle cx="40" cy="40" r="34" class="countdown-progress takeover-ring-anim"/>
+                    </svg>
+                    <span class="countdown-number">10</span>
+                </div>
                 <button type="button" role="button" class="btn btn-primary" style="margin-top:var(--sp-3);" data-cta="grip">Grip wheel</button>
             `;
             const grip = slot.querySelector('[data-cta="grip"]');
             if (grip) grip.addEventListener('click', () => controller.advance('driving-takeover-confirmed'));
+
+            // Countdown animation
+            let remaining = 10;
+            const countdownEl = slot.querySelector('.countdown-number');
+            const countdownInterval = setInterval(() => {
+                remaining--;
+                if (countdownEl) countdownEl.textContent = remaining;
+                if (remaining <= 0) clearInterval(countdownInterval);
+            }, 1000);
+            const stopCountdown = bus.on('stepWillChange', () => { clearInterval(countdownInterval); stopCountdown(); });
         }
         bus.emit('timedEvent', { stepIndex: step.globalIndex, eventId: 'takeover-prompt' });
     }, 2000);
@@ -109,6 +144,12 @@ const FATIGUE_LEVELS = [
     { klass: 'escalation-3 is-critical', text: 'WAKE UP · SOS IN 10' },
 ];
 
+const FATIGUE_CARD_DATA = [
+    { levelClass: 'fatigue-level-1', icon: '🔔', title: 'Level 1 · Attention check', body: 'Soft chime. "Are you awake?"', caption: 'Gentle reminder — tap to acknowledge' },
+    { levelClass: 'fatigue-level-2', icon: '⚠️', title: 'Level 2 · Warning buzzer', body: 'Louder buzzer. Seat pulse. HUD flashes.', caption: 'Respond now — grip wheel or tap' },
+    { levelClass: 'fatigue-level-3', icon: '🚨', title: 'Level 3 · Critical · SOS engaged', body: 'Full cabin strobe. MRM armed. SOS countdown running.', caption: 'Emergency protocol active' },
+];
+
 function renderFatigueCluster(host, level = 0) {
     const l = FATIGUE_LEVELS[level];
     baseCluster('fatigue', host, l.klass, l.text);
@@ -116,14 +157,19 @@ function renderFatigueCluster(host, level = 0) {
 
 function renderFatigueTablet(host, step, controller, bus) {
     const s = SCENARIOS.fatigue;
+    const cardData = FATIGUE_CARD_DATA[0];
     host.innerHTML = `
         <div class="tablet-step">
             <p class="t-caption step-meta">Driving · Fatigue protocol</p>
             <h2 class="step-title">${s.title}</h2>
             <p class="step-purpose">${s.intent}</p>
-            <div data-fatigue-state style="padding:var(--sp-4);background:var(--color-surface-subtle);border-radius:12px;">
-                <p class="t-caption">Level 1 · Attention check</p>
-                <p style="margin-top:var(--sp-2);">Soft chime. "Are you awake?"</p>
+            <div class="fatigue-card ${cardData.levelClass}" data-fatigue-state>
+                <div class="fatigue-card-icon">${cardData.icon}</div>
+                <div class="fatigue-card-body">
+                    <p class="fatigue-card-title">${cardData.title}</p>
+                    <p class="fatigue-card-desc">${cardData.body}</p>
+                    <p class="fatigue-card-caption">${cardData.caption}</p>
+                </div>
             </div>
             <div class="step-actions">
                 ${tmShield(s.trust)}
@@ -139,40 +185,80 @@ function renderFatigueTablet(host, step, controller, bus) {
     const tick = setInterval(() => {
         level = Math.min(level + 1, FATIGUE_LEVELS.length - 1);
         const slot = host.querySelector('[data-fatigue-state]');
-        const labels = ['Level 1 · Attention check', 'Level 2 · Warning buzzer', 'Level 3 · Critical · SOS engaged'];
-        const bodies = [
-            'Soft chime. "Are you awake?"',
-            'Louder buzzer. Seat pulse. HUD flashes.',
-            'Full cabin strobe. MRM armed. SOS countdown running.',
-        ];
-        if (slot) slot.innerHTML = `<p class="t-caption">${labels[level]}</p><p style="margin-top:var(--sp-2);">${bodies[level]}</p>`;
+        const cd = FATIGUE_CARD_DATA[level];
+        if (slot) {
+            slot.className = `fatigue-card ${cd.levelClass}`;
+            slot.innerHTML = `
+                <div class="fatigue-card-icon">${cd.icon}</div>
+                <div class="fatigue-card-body">
+                    <p class="fatigue-card-title">${cd.title}</p>
+                    <p class="fatigue-card-desc">${cd.body}</p>
+                    <p class="fatigue-card-caption">${cd.caption}</p>
+                </div>
+            `;
+        }
         bus.emit('timedEvent', { stepIndex: step.globalIndex, eventId: 'fatigue-escalate', payload: { level } });
         if (level >= FATIGUE_LEVELS.length - 1) clearInterval(tick);
     }, 4000);
     const stop = bus.on('stepWillChange', () => { clearInterval(tick); stop(); });
 }
 
-// ── Battery (with POI map) ────────────────────────────────────────────
+// ── Battery (with POI map + Range Math + ADAS Routing) ────────────────
 
 function renderBatteryCluster(host) {
     baseCluster('battery', host, 'is-warning', 'CRITICAL RANGE',
-        '<p class="t-caption" style="margin-top:var(--sp-2);">42 km remaining · 58 km to next charger</p>'
+        `<p class="t-caption" style="margin-top:var(--sp-2);">42 km remaining · 58 km to next charger</p>
+         <span class="cluster-autonomy" style="margin-top:var(--sp-2);">L4 ACTIVE</span>`
     );
 }
 
 const POI_PINS = [
-    { id: 'charger-1', x: 58, y: 34, icon: '⚡', label: 'Supercharger', sub: '+6 min · adds 80 km', recommended: true },
-    { id: 'rest-stop', x: 72, y: 52, icon: '🍔', label: 'Rest Stop', sub: '+2 min · no charging', recommended: false },
+    { id: 'charger-1', x: 58, y: 34, icon: '⚡', label: 'Supercharger', sub: '+6 min · adds 80 km', recommended: true, relevance: 'high', relevanceReason: 'Battery below 20% — closest fast charger on route', type: 'charger' },
+    { id: 'charger-2', x: 42, y: 18, icon: '⚡', label: 'City Charger', sub: '+12 min · adds 60 km', recommended: false, relevance: 'medium', relevanceReason: 'Alternate charger — slightly off route', type: 'charger' },
+    { id: 'rest-stop', x: 72, y: 52, icon: '🍔', label: 'Rest Stop', sub: '+2 min · no charging', recommended: false, relevance: 'low', relevanceReason: 'Food available but no charging', type: 'food' },
+    { id: 'rest-area', x: 85, y: 22, icon: '🅿️', label: 'Rest Area', sub: '+3 min · scenic overlook', recommended: false, relevance: 'low', relevanceReason: 'Rest area — no charging facilities', type: 'rest' },
 ];
 
 function renderBatteryTablet(host, step, controller) {
     const s = SCENARIOS.battery;
-    const pinsHtml = POI_PINS.map(p => `
-        <g class="poi-pin" data-poi="${p.id}" role="button" tabindex="0" aria-label="${p.label}">
-            <rect class="pin-bg" x="${p.x - 14}" y="${p.y - 14}" width="28" height="22" rx="5"/>
-            <text class="pin-icon" x="${p.x}" y="${p.y - 2}">${p.icon}</text>
+
+    // Sort POIs by relevance for rendering (high first = largest)
+    const relevanceOrder = { high: 0, medium: 1, low: 2 };
+    const sortedPOIs = [...POI_PINS].sort((a, b) => relevanceOrder[a.relevance] - relevanceOrder[b.relevance]);
+
+    const pinSize = { high: 32, medium: 26, low: 20 };
+    const pinOpacity = { high: 1, medium: 0.85, low: 0.65 };
+
+    const pinsHtml = sortedPOIs.map((p, i) => {
+        const size = pinSize[p.relevance];
+        const opacity = pinOpacity[p.relevance];
+        const pulseClass = p.type === 'charger' ? 'poi-pulse' : '';
+        const badgeColor = p.relevance === 'high' ? '#10B981' : p.relevance === 'medium' ? '#F59E0B' : '#6B7280';
+        const badgeText = p.relevance.toUpperCase();
+        return `
+        <g class="poi-pin poi-fade-in ${pulseClass}" data-poi="${p.id}" role="button" tabindex="0" aria-label="${p.label}" style="opacity:${opacity};animation-delay:${i * 150}ms;">
+            <rect class="pin-bg" x="${p.x - size / 2}" y="${p.y - size / 2}" width="${size}" height="${size * 0.78}" rx="5"/>
+            <text class="pin-icon" x="${p.x}" y="${p.y + 1}">${p.icon}</text>
+            <rect class="poi-relevance-badge" x="${p.x + size / 2 - 14}" y="${p.y - size / 2 - 4}" width="16" height="7" rx="3" fill="${badgeColor}"/>
+            <text x="${p.x + size / 2 - 6}" y="${p.y - size / 2 + 1}" font-size="3.5" fill="white" text-anchor="middle" font-weight="700">${badgeText}</text>
         </g>
-    `).join('');
+    `}).join('');
+
+    // Route candidates for ADAS animation
+    const routeCandidates = `
+        <path class="route-candidate" d="M10,30 Q30,28 50,30 Q75,32 90,30" data-route="1"/>
+        <path class="route-candidate" d="M10,30 Q30,24 50,22 Q70,24 90,30" data-route="2"/>
+        <path class="route-candidate" d="M10,30 Q25,34 45,36 Q70,34 90,30" data-route="3"/>
+        <path class="route-selected route-corridor" d="M10,30 Q30,28 50,30 Q75,32 90,30" data-route="chosen"/>
+    `;
+
+    // Color-coded route segments for autonomous compatibility
+    const adasSegments = `
+        <path class="route-corridor sz-green" d="M10,30 Q20,29 30,29" stroke-width="3"/>
+        <path class="route-corridor sz-yellow" d="M30,29 Q40,29 50,30" stroke-width="3"/>
+        <path class="route-corridor sz-green" d="M50,30 Q65,31 80,31" stroke-width="3"/>
+        <path class="route-corridor sz-red" d="M80,31 Q85,31 90,30" stroke-width="3"/>
+    `;
 
     host.innerHTML = `
         <div class="tablet-step">
@@ -180,15 +266,34 @@ function renderBatteryTablet(host, step, controller) {
             <h2 class="step-title">${s.title}</h2>
             <p class="step-purpose">${s.intent}</p>
 
+            <div class="range-math-bar">
+                <div class="range-math-item">
+                    <span class="range-math-label">Current range</span>
+                    <span class="range-math-value range-math-ok">42 km</span>
+                </div>
+                <div class="range-math-divider">→</div>
+                <div class="range-math-item">
+                    <span class="range-math-label">To charger</span>
+                    <span class="range-math-value range-math-warn">58 km</span>
+                </div>
+                <div class="range-math-divider">=</div>
+                <div class="range-math-item">
+                    <span class="range-math-label">Deficit</span>
+                    <span class="range-math-value range-math-critical">−16 km</span>
+                </div>
+            </div>
+
             <div class="poi-map-wrap">
                 <svg viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet">
                     <path class="poi-road" d="M5,30 L95,30"/>
                     <path class="poi-road" d="M60,5 L60,55"/>
-                    <path class="poi-route-original" d="M10,30 Q30,30 50,30 Q75,30 90,30"/>
+                    ${adasSegments}
+                    ${routeCandidates}
                     <path class="poi-route-detour" d="M30,30 Q45,30 52,28 Q56,22 58,20"/>
                     ${pinsHtml}
-                    <rect x="27" y="27" width="6" height="6" rx="2" fill="var(--color-accent-primary)" opacity="0.9"/>
+                    <rect x="7" y="27" width="6" height="6" rx="2" fill="var(--color-accent-primary)" opacity="0.9"/>
                 </svg>
+                <div class="adas-coverage-label" data-adas-label style="display:none;">87% autonomous coverage</div>
                 <div id="poi-tooltip" class="poi-tooltip" style="display:none;left:0;top:0;"></div>
             </div>
 
@@ -215,6 +320,22 @@ function renderBatteryTablet(host, step, controller) {
         </div>
     `;
 
+    // Route selection animation: show candidates sequentially, then highlight chosen
+    const candidates = host.querySelectorAll('.route-candidate');
+    const chosenRoute = host.querySelector('.route-selected');
+    const adasLabel = host.querySelector('[data-adas-label]');
+    if (chosenRoute) chosenRoute.style.opacity = '0';
+    candidates.forEach((c, i) => {
+        c.style.opacity = '0';
+        setTimeout(() => { c.style.opacity = '0.4'; }, 600 + i * 500);
+    });
+    setTimeout(() => {
+        candidates.forEach(c => { c.style.opacity = '0.15'; });
+        if (chosenRoute) { chosenRoute.style.opacity = '1'; chosenRoute.classList.add('route-selected-pulse'); }
+        if (adasLabel) adasLabel.style.display = 'block';
+    }, 2200);
+
+    // POI tooltip with enhanced relevance info
     const tooltip = host.querySelector('#poi-tooltip');
     host.querySelectorAll('.poi-pin').forEach(pin => {
         const id = pin.dataset.poi;
@@ -223,7 +344,13 @@ function renderBatteryTablet(host, step, controller) {
 
         function showTooltip() {
             if (!tooltip) return;
-            tooltip.innerHTML = `<strong>${poi.icon} ${poi.label}</strong><span>${poi.sub}</span>`;
+            const badgeColor = poi.relevance === 'high' ? '#10B981' : poi.relevance === 'medium' ? '#F59E0B' : '#6B7280';
+            tooltip.innerHTML = `
+                <strong>${poi.icon} ${poi.label}</strong>
+                <span class="poi-tooltip-type">${poi.type}</span>
+                <span>${poi.sub}</span>
+                <span class="poi-tooltip-reason" style="color:${badgeColor};">${poi.relevanceReason}</span>
+            `;
             const rect = pin.getBoundingClientRect();
             const wrap = host.querySelector('.poi-map-wrap').getBoundingClientRect();
             tooltip.style.display = 'block';
