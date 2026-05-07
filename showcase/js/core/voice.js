@@ -385,8 +385,8 @@ export function createVoiceService({ bus, controller, steps }) {
     // Subscribe to step changes
     bus.on('stepDidChange', onStepChange);
 
-    // Auto-start recognition on boot
-    startListening();
+    // Voice recognition starts only on user gesture (mic toggle click).
+    // startListening() removed — Web Speech API requires user gesture.
 
     return {
         speak,

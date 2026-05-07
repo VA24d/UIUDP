@@ -56,6 +56,52 @@ function baseCluster(slug, host, alertClass = 'is-success', alertText = 'NORMAL'
 
 function tmShield(tm) { return tm ? `<span class="trust-moment">${tm.text}</span>` : ''; }
 
+// ── Transition Card ───────────────────────────────────────────────────
+
+function renderTransitionCard(host, { phase, title, description, icon }, controller, bus) {
+    host.innerHTML = `
+        <div class="tablet-step transition-card">
+            <div class="transition-card-icon">${icon || '🚗'}</div>
+            <h2 class="step-title transition-card-title">${title}</h2>
+            <p class="step-purpose transition-card-desc">${description}</p>
+            <button type="button" role="button" class="btn btn-ghost transition-card-skip" data-cta="skip">Skip →</button>
+        </div>
+    `;
+
+    // Auto-advance after 3 seconds
+    const autoTimer = setTimeout(() => controller.advance(`${phase}-intro-auto`), 3000);
+    host.querySelector('[data-cta="skip"]').addEventListener('click', () => {
+        clearTimeout(autoTimer);
+        controller.advance(`${phase}-intro-skip`);
+    });
+    const stop = bus.on('stepWillChange', () => { clearTimeout(autoTimer); stop(); });
+}
+
+function renderDrivingIntroCluster(host) {
+    host.innerHTML = `
+        <div class="cluster-title">
+            <span class="t-caption cluster-context">Driving · Transition</span>
+            <span class="cluster-autonomy">TRANSITIONING</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:var(--sp-3);">
+            <span class="cluster-speed">—</span>
+            <span class="t-caption">km/h</span>
+        </div>
+        <div style="margin-top:var(--sp-4);">
+            <span class="cluster-alert-pill is-success">READY</span>
+        </div>
+    `;
+}
+
+function renderDrivingIntroTablet(host, step, controller, bus) {
+    renderTransitionCard(host, {
+        phase: 'driving',
+        title: 'Entering Driving Mode',
+        description: 'Experience how AeroDrive handles real-world driving scenarios',
+        icon: '🛣️',
+    }, controller, bus);
+}
+
 // ── Unmapped zone ─────────────────────────────────────────────────────
 
 function renderUnmappedClusterInitial(host) {
@@ -116,17 +162,115 @@ function renderUnmappedTablet(host, step, controller, bus) {
                     </svg>
                     <span class="countdown-number">10</span>
                 </div>
-                <button type="button" role="button" class="btn btn-primary" style="margin-top:var(--sp-3);" data-cta="grip">Grip wheel</button>
+                <div class="tactile-wheel tactile-pulse-1hz" data-tactile-wheel>☸</div>
+                <div class="drill-grip-area" style="margin-top:var(--sp-3);">
+                    <button type="button" class="grip-button" data-grip-btn>
+                        <span class="grip-fill" data-grip-fill style="width:0%"></span>
+                        <span class="grip-label">GRIP STEERING WHEEL</span>
+                    </button>
+                    <p class="t-caption cluster-context">Press and hold (or spacebar)</p>
+                </div>
             `;
-            const grip = slot.querySelector('[data-cta="grip"]');
-            if (grip) grip.addEventListener('click', () => controller.advance('driving-takeover-confirmed'));
 
-            // Countdown animation
+            // ── Grip mechanic ────────────────────────────────────────────
+            const GRIP_DURATION = 2500;
+            let gripStartTime = null;
+            let gripAnimFrame = null;
+            let gripProgress = 0;
+
+            function startGrip() {
+                gripStartTime = Date.now();
+                animateGrip();
+            }
+
+            function releaseGrip() {
+                gripStartTime = null;
+                gripProgress = 0;
+                if (gripAnimFrame) { cancelAnimationFrame(gripAnimFrame); gripAnimFrame = null; }
+                const fill = slot.querySelector('[data-grip-fill]');
+                if (fill) fill.style.width = '0%';
+            }
+
+            function animateGrip() {
+                if (!gripStartTime) return;
+                const elapsed = Date.now() - gripStartTime;
+                gripProgress = Math.min(100, (elapsed / GRIP_DURATION) * 100);
+                const fill = slot.querySelector('[data-grip-fill]');
+                if (fill) fill.style.width = `${gripProgress}%`;
+
+                if (gripProgress >= 100) {
+                    // Success
+                    if (countdownInterval) { clearInterval(countdownInterval); }
+                    slot.innerHTML = `
+                        <div class="drill-stage drill-success" style="text-align:center;padding:var(--sp-4);">
+                            <div class="drill-check">✓</div>
+                            <p class="drill-result-title">CONTROL SECURED</p>
+                            <p class="t-caption cluster-context">Manual control confirmed.</p>
+                        </div>
+                    `;
+                    setTimeout(() => controller.advance('driving-takeover-confirmed'), 800);
+                    return;
+                }
+                gripAnimFrame = requestAnimationFrame(animateGrip);
+            }
+
+            const gripBtn = slot.querySelector('[data-grip-btn]');
+            if (gripBtn) {
+                gripBtn.addEventListener('mousedown', startGrip);
+                gripBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startGrip(); });
+                gripBtn.addEventListener('mouseup', releaseGrip);
+                gripBtn.addEventListener('mouseleave', releaseGrip);
+                gripBtn.addEventListener('touchend', releaseGrip);
+                gripBtn.addEventListener('touchcancel', releaseGrip);
+            }
+
+            // Spacebar support
+            let spaceHeld = false;
+            function onKeyDown(e) {
+                if (e.code === 'Space' && e.repeat) { e.preventDefault(); return; }
+                if (e.code === 'Space' && !spaceHeld) {
+                    e.preventDefault();
+                    spaceHeld = true;
+                    startGrip();
+                }
+            }
+            function onKeyUp(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    spaceHeld = false;
+                    releaseGrip();
+                }
+            }
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+
+            // Cleanup spacebar on step change
+            const offKey = bus.on('stepWillChange', () => {
+                document.removeEventListener('keydown', onKeyDown);
+                document.removeEventListener('keyup', onKeyUp);
+                spaceHeld = false;
+                if (gripAnimFrame) { cancelAnimationFrame(gripAnimFrame); gripAnimFrame = null; }
+                offKey();
+            });
+
+            // Countdown animation with tactile pulse escalation
             let remaining = 10;
             const countdownEl = slot.querySelector('.countdown-number');
             const countdownInterval = setInterval(() => {
                 remaining--;
                 if (countdownEl) countdownEl.textContent = remaining;
+                // Tactile pulse escalation
+                const wheelEl = slot.querySelector('[data-tactile-wheel]');
+                if (wheelEl) {
+                    wheelEl.classList.remove('tactile-pulse-1hz', 'tactile-pulse-2hz', 'tactile-pulse-3hz', 'tactile-glow');
+                    if (remaining <= 3) {
+                        wheelEl.classList.add('tactile-pulse-3hz', 'tactile-glow');
+                    } else if (remaining <= 5) {
+                        wheelEl.classList.add('tactile-pulse-2hz');
+                    } else {
+                        wheelEl.classList.add('tactile-pulse-1hz');
+                    }
+                }
                 if (remaining <= 0) clearInterval(countdownInterval);
             }, 1000);
             const stopCountdown = bus.on('stepWillChange', () => { clearInterval(countdownInterval); stopCountdown(); });
@@ -375,6 +519,43 @@ function renderBatteryTablet(host, step, controller) {
     if (defaultCard && typeof defaultCard.focus === 'function') {
         try { defaultCard.focus(); } catch { /* jsdom */ }
     }
+
+    // ── Choice card click handlers ───────────────────────────────────────
+    const rerouteCard = host.querySelector('[data-choice="reroute"]');
+    const continueCard = host.querySelector('[data-choice="continue"]');
+
+    if (rerouteCard) {
+        rerouteCard.addEventListener('click', () => {
+            rerouteCard.classList.add('is-selected');
+            if (continueCard) continueCard.classList.add('is-dimmed');
+
+            // Animate reroute on map
+            const detour = host.querySelector('.poi-route-detour');
+            if (detour) detour.classList.add('route-animating');
+            const chargerPin = host.querySelector('[data-poi="charger-1"]');
+            if (chargerPin) chargerPin.classList.add('poi-pulse-active');
+
+            // Show rerouting status
+            const etaSlot = host.querySelector('[data-eta-slot]');
+            if (etaSlot) etaSlot.innerHTML = '<div class="poi-eta-update">🔄 Rerouting to Supercharger… +6 min</div>';
+
+            // Advance after animation
+            setTimeout(() => controller.advance('driving-battery-reroute'), 1500);
+        });
+    }
+
+    if (continueCard) {
+        continueCard.addEventListener('click', () => {
+            continueCard.classList.add('is-selected');
+            if (rerouteCard) rerouteCard.classList.add('is-dimmed');
+
+            const etaSlot = host.querySelector('[data-eta-slot]');
+            if (etaSlot) etaSlot.innerHTML = '<div class="poi-eta-update">⚡ Low-power mode armed — monitoring range</div>';
+
+            setTimeout(() => controller.advance('driving-battery-continue'), 800);
+        });
+    }
+
     host.querySelector('[data-cta="confirm"]').addEventListener('click', () => controller.advance('driving-battery-confirmed'));
 }
 
@@ -473,6 +654,14 @@ function renderWeatherTablet(host, step, controller) {
 
 export function makeDrivingSteps({ controller, bus }) {
     return [
+        {
+            id: 'driving.intro',
+            stage: 'driving', slug: 'intro',
+            label: 'Driving intro', title: 'Entering Driving Mode',
+            trustMoments: [],
+            renderCluster: (host) => renderDrivingIntroCluster(host),
+            renderTablet: (host, step) => renderDrivingIntroTablet(host, step, controller, bus),
+        },
         {
             id: 'driving.unmapped-zone',
             stage: 'driving', slug: 'unmapped-zone',

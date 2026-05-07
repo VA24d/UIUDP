@@ -11,17 +11,18 @@ function makeDOM() {
     return window.document;
 }
 function makeController() {
-    return { advance: () => {}, retreat: () => {}, goTo: () => {}, getActiveIndex: () => 0 };
+    return { advance: () => { }, retreat: () => { }, goTo: () => { }, getActiveIndex: () => 0 };
 }
 function makeBus() {
     const listeners = {};
     return {
         emit: (t, p) => (listeners[t] || []).forEach(fn => fn(p)),
-        on: (t, fn) => { listeners[t] = listeners[t] || []; listeners[t].push(fn); return () => {}; },
+        on: (t, fn) => { listeners[t] = listeners[t] || []; listeners[t].push(fn); return () => { }; },
     };
 }
 
 const EXPECTED_IDS = [
+    'driving.intro',
     'driving.unmapped-zone',
     'driving.fatigue',
     'driving.battery',
@@ -29,11 +30,11 @@ const EXPECTED_IDS = [
 ];
 
 describe('Driving — step descriptors', () => {
-    it('returns exactly 4 steps in the correct order', () => {
+    it('returns exactly 5 steps in the correct order', () => {
         const controller = makeController();
         const bus = makeBus();
         const steps = makeDrivingSteps({ controller, bus });
-        expect(steps).toHaveLength(4);
+        expect(steps).toHaveLength(5);
         steps.forEach((s, i) => expect(s.id).toBe(EXPECTED_IDS[i]));
     });
 
@@ -42,9 +43,9 @@ describe('Driving — step descriptors', () => {
         steps.forEach(s => expect(s.stage).toBe('driving'));
     });
 
-    it('every step has at least one trustMoment', () => {
+    it('every non-intro step has at least one trustMoment', () => {
         const steps = makeDrivingSteps({ controller: makeController(), bus: makeBus() });
-        steps.forEach(s => {
+        steps.filter(s => s.slug !== 'intro').forEach(s => {
             expect(Array.isArray(s.trustMoments)).toBe(true);
             expect(s.trustMoments.length).toBeGreaterThanOrEqual(1);
         });

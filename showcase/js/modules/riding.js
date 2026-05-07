@@ -32,6 +32,25 @@ const SAFE_ZONE_SEGMENTS = [
 // Marker positions per riding step index (0=environment, 1=maneuver, 2=productive)
 const SAFE_ZONE_POSITIONS = [15, 40, 65];
 
+// ── Mini Perception Radar (Task 3) ───────────────────────────────────
+
+function buildMiniPerceptionSVG() {
+    return `
+        <svg viewBox="0 0 60 40" preserveAspectRatio="xMidYMid meet" class="cluster-mini-radar" aria-label="Perception radar">
+            <!-- Range arcs -->
+            <path d="M10,38 A20,20 0 0,1 50,38" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+            <path d="M18,38 A12,12 0 0,1 42,38" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+            <!-- Bounding boxes -->
+            <rect x="12" y="14" width="10" height="6" rx="1" fill="none" stroke="#4ADE80" stroke-width="0.8" opacity="0.9"/>
+            <rect x="36" y="10" width="8" height="5" rx="1" fill="none" stroke="#4ADE80" stroke-width="0.8" opacity="0.8"/>
+            <rect x="8" y="24" width="5" height="9" rx="1" fill="none" stroke="#FBBF24" stroke-width="0.8" opacity="0.85"/>
+            <rect x="44" y="20" width="6" height="6" rx="1" fill="none" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+            <!-- Ego vehicle -->
+            <rect x="27" y="33" width="6" height="5" rx="1.5" fill="var(--color-accent-primary, #2B4CFF)"/>
+        </svg>
+    `;
+}
+
 function baseCluster(host, slug, extra = '') {
     host.innerHTML = `
         <div class="cluster-title">
@@ -78,6 +97,52 @@ function renderSafeZoneBar(ridingStepIndex) {
             ${labelsHtml}
         </div>
     `;
+}
+
+// ── Transition Card (Riding) ──────────────────────────────────────────
+
+function renderTransitionCard(host, { phase, title, description, icon }, controller, bus) {
+    host.innerHTML = `
+        <div class="tablet-step transition-card">
+            <div class="transition-card-icon">${icon || '🚗'}</div>
+            <h2 class="step-title transition-card-title">${title}</h2>
+            <p class="step-purpose transition-card-desc">${description}</p>
+            <button type="button" role="button" class="btn btn-ghost transition-card-skip" data-cta="skip">Skip →</button>
+        </div>
+    `;
+
+    // Auto-advance after 3 seconds
+    const autoTimer = setTimeout(() => controller.advance(`${phase}-intro-auto`), 3000);
+    host.querySelector('[data-cta="skip"]').addEventListener('click', () => {
+        clearTimeout(autoTimer);
+        controller.advance(`${phase}-intro-skip`);
+    });
+    const stop = bus.on('stepWillChange', () => { clearTimeout(autoTimer); stop(); });
+}
+
+function renderRidingIntroCluster(host) {
+    host.innerHTML = `
+        <div class="cluster-title">
+            <span class="t-caption cluster-context">Riding · Transition</span>
+            <span class="cluster-passenger-pill">PASSENGER MODE</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:var(--sp-3);">
+            <span class="cluster-speed">—</span>
+            <span class="t-caption">km/h</span>
+        </div>
+        <div style="margin-top:var(--sp-4);">
+            <span class="cluster-alert-pill is-success">READY</span>
+        </div>
+    `;
+}
+
+function renderRidingIntroTablet(host, step, controller, bus) {
+    renderTransitionCard(host, {
+        phase: 'riding',
+        title: 'Entering Passenger Mode',
+        description: 'See how AeroDrive keeps you informed as a passenger',
+        icon: '🧘',
+    }, controller, bus);
 }
 
 // ── Environment / Perception HUD ─────────────────────────────────────
@@ -129,7 +194,9 @@ function buildPerceptionSVG(objects) {
 
 function renderEnvironmentCluster(host) {
     baseCluster(host, 'environment',
-        `<p class="t-caption" style="margin-top:var(--sp-3);color:var(--color-success);font-weight:600;" data-obj-count>
+        `${buildMiniPerceptionSVG()}
+        ${renderSafeZoneBar(0)}
+        <p class="t-caption" style="margin-top:var(--sp-3);color:var(--color-success);font-weight:600;" data-obj-count>
             ${DETECTED_OBJECTS.length} OBJECTS TRACKED
         </p>`
     );
@@ -213,11 +280,18 @@ function renderEnvironmentTablet(host, step, controller, bus) {
 
 // ── Maneuver ──────────────────────────────────────────────────────────
 
-function renderManeuverClusterQuiet(host) { baseCluster(host, 'maneuver'); }
+function renderManeuverClusterQuiet(host) {
+    baseCluster(host, 'maneuver',
+        `${buildMiniPerceptionSVG()}
+        ${renderSafeZoneBar(1)}`
+    );
+}
 
 function renderManeuverClusterEvent(host) {
     baseCluster(host, 'maneuver',
-        '<p class="t-caption" style="margin-top:var(--sp-2);color:var(--color-warning);font-weight:700;">LEFT TURN · Oak St</p>'
+        `${buildMiniPerceptionSVG()}
+        ${renderSafeZoneBar(1)}
+        <p class="t-caption" style="margin-top:var(--sp-2);color:var(--color-warning);font-weight:700;">LEFT TURN · Oak St</p>`
     );
 }
 
@@ -255,7 +329,12 @@ function renderManeuverTablet(host, step, controller, bus) {
 
 // ── Productive time ──────────────────────────────────────────────────
 
-function renderProductiveCluster(host) { baseCluster(host, 'productive-time'); }
+function renderProductiveCluster(host) {
+    baseCluster(host, 'productive-time',
+        `${buildMiniPerceptionSVG()}
+        ${renderSafeZoneBar(2)}`
+    );
+}
 
 function renderProductiveTablet(host, step, controller, bus) {
     const s = SCENARIOS['productive-time'];
@@ -341,6 +420,14 @@ function renderProductiveTablet(host, step, controller, bus) {
 
 export function makeRidingSteps({ controller, bus }) {
     return [
+        {
+            id: 'riding.intro',
+            stage: 'riding', slug: 'intro',
+            label: 'Riding intro', title: 'Entering Passenger Mode',
+            trustMoments: [],
+            renderCluster: (host) => renderRidingIntroCluster(host),
+            renderTablet: (host, step) => renderRidingIntroTablet(host, step, controller, bus),
+        },
         {
             id: 'riding.environment',
             stage: 'riding', slug: 'environment',

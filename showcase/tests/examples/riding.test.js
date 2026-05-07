@@ -11,27 +11,28 @@ function makeDOM() {
     return window.document;
 }
 function makeController() {
-    return { advance: () => {}, retreat: () => {}, goTo: () => {}, getActiveIndex: () => 0 };
+    return { advance: () => { }, retreat: () => { }, goTo: () => { }, getActiveIndex: () => 0 };
 }
 function makeBus() {
     const listeners = {};
     return {
         emit: (t, p) => (listeners[t] || []).forEach(fn => fn(p)),
-        on: (t, fn) => { listeners[t] = listeners[t] || []; listeners[t].push(fn); return () => {}; },
+        on: (t, fn) => { listeners[t] = listeners[t] || []; listeners[t].push(fn); return () => { }; },
     };
 }
 
 describe('Riding — step descriptors', () => {
-    it('returns exactly 3 steps', () => {
+    it('returns exactly 4 steps', () => {
         const steps = makeRidingSteps({ controller: makeController(), bus: makeBus() });
-        expect(steps).toHaveLength(3);
+        expect(steps).toHaveLength(4);
     });
 
     it('steps are in the correct order', () => {
         const steps = makeRidingSteps({ controller: makeController(), bus: makeBus() });
-        expect(steps[0].id).toBe('riding.environment');
-        expect(steps[1].id).toBe('riding.maneuver');
-        expect(steps[2].id).toBe('riding.productive-time');
+        expect(steps[0].id).toBe('riding.intro');
+        expect(steps[1].id).toBe('riding.environment');
+        expect(steps[2].id).toBe('riding.maneuver');
+        expect(steps[3].id).toBe('riding.productive-time');
     });
 
     it('every step has stage=riding', () => {
