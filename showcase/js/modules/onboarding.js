@@ -175,9 +175,8 @@ function renderProfileTablet(host, step, controller, bus) {
         else wirePhase3();
 
         host.querySelector('[data-cta="onboarding-advance"]').addEventListener('click', () => {
-            // The CTA always completes the step (skips remaining phases)
-            cleanup();
-            completeThenAdvance(host, controller, 'onboarding-profile-cta');
+            // Advance to next phase (name → face → voice), not skip to next step
+            advancePhase();
         });
     }
 
