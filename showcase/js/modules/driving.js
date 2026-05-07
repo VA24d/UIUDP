@@ -363,7 +363,7 @@ const POI_PINS = [
     { id: 'rest-area', x: 85, y: 22, icon: '🅿️', label: 'Rest Area', sub: '+3 min · scenic overlook', recommended: false, relevance: 'low', relevanceReason: 'Rest area — no charging facilities', type: 'rest' },
 ];
 
-function renderBatteryTablet(host, step, controller) {
+function renderBatteryTablet(host, step, controller, bus) {
     const s = SCENARIOS.battery;
 
     // Sort POIs by relevance for rendering (high first = largest)
@@ -519,6 +519,50 @@ function renderBatteryTablet(host, step, controller) {
     if (defaultCard && typeof defaultCard.focus === 'function') {
         try { defaultCard.focus(); } catch { /* jsdom */ }
     }
+
+    // ── Traffic rerouting notification (appears after 3s) ────────────────
+    const trafficTimer = setTimeout(() => {
+        const etaSlot = host.querySelector('[data-eta-slot]');
+        if (etaSlot) {
+            etaSlot.innerHTML = `
+                <div class="traffic-reroute-notification" style="padding:var(--sp-3) var(--sp-4);background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:10px;animation:hud-alert-in var(--motion-dur-step) var(--motion-ease-forward);">
+                    <p style="font-weight:700;color:var(--color-critical);margin-bottom:var(--sp-1);">🚦 Traffic detected ahead — rerouting</p>
+                    <p class="t-caption" style="color:var(--color-text-secondary);">Original: 45 min → New: 38 min <strong style="color:var(--color-success);">(saved 7 min)</strong></p>
+                </div>
+            `;
+        }
+        // Add traffic indicator (red segment) on the map
+        const mapSvg = host.querySelector('.poi-map-wrap svg');
+        if (mapSvg) {
+            // Red traffic segment on original route
+            const trafficSegment = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            trafficSegment.setAttribute('d', 'M40,30 Q50,30 60,30');
+            trafficSegment.setAttribute('stroke', '#EF4444');
+            trafficSegment.setAttribute('stroke-width', '4');
+            trafficSegment.setAttribute('fill', 'none');
+            trafficSegment.setAttribute('opacity', '0.7');
+            trafficSegment.setAttribute('stroke-linecap', 'round');
+            trafficSegment.classList.add('traffic-segment-pulse');
+            mapSvg.appendChild(trafficSegment);
+
+            // Animated new route path (different from charger reroute)
+            const newRoute = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            newRoute.setAttribute('d', 'M30,30 Q40,42 55,44 Q70,42 80,34 Q88,30 90,30');
+            newRoute.setAttribute('stroke', 'var(--color-success)');
+            newRoute.setAttribute('stroke-width', '2.5');
+            newRoute.setAttribute('fill', 'none');
+            newRoute.setAttribute('stroke-dasharray', '4 2');
+            newRoute.setAttribute('opacity', '0');
+            newRoute.style.transition = 'opacity 0.8s ease';
+            mapSvg.appendChild(newRoute);
+
+            // Animate new route appearing
+            setTimeout(() => { newRoute.setAttribute('opacity', '0.9'); }, 300);
+        }
+    }, 3000);
+
+    // Cleanup traffic timer on step change
+    const stopTraffic = bus.on('stepWillChange', () => { clearTimeout(trafficTimer); stopTraffic(); });
 
     // ── Choice card click handlers ───────────────────────────────────────
     const rerouteCard = host.querySelector('[data-choice="reroute"]');
@@ -684,7 +728,7 @@ export function makeDrivingSteps({ controller, bus }) {
             label: 'Battery reroute', title: SCENARIOS.battery.title,
             trustMoments: [SCENARIOS.battery.trust],
             renderCluster: (host) => renderBatteryCluster(host),
-            renderTablet: (host, step) => renderBatteryTablet(host, step, controller),
+            renderTablet: (host, step) => renderBatteryTablet(host, step, controller, bus),
         },
         {
             id: 'driving.weather',

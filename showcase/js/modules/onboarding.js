@@ -19,12 +19,12 @@ const ONBOARDING_TITLES = {
 };
 
 const ONBOARDING_PURPOSES = {
-    profile: 'Register a face and a voice so your AeroDrive knows who is driving.',
-    comfort: 'Shape the seat, mirrors, and climate to exactly what you like.',
-    locations: 'Pin the places you drive to most so routes set themselves.',
-    'drive-explained': 'Four screens that explain how autonomous handoffs work.',
-    'takeover-drill': 'Rehearse the real take-over move so the first one is familiar.',
-    preferences: 'Tune speed, following distance, and lane style to your comfort.',
+    profile: 'Create your unique driver identity — face, voice, and preferences synced to the cloud for instant recognition across any AeroDrive vehicle.',
+    comfort: 'Precision-calibrate your cabin environment — seat ergonomics, climate zones, and ambient lighting tuned to your exact preferences.',
+    locations: 'Define your world — pin frequent destinations and let AeroDrive pre-compute optimal autonomous routes between them.',
+    'drive-explained': 'Understand the intelligence behind your drive — four interactive modules covering autonomy levels, safety systems, energy management, and handover protocols.',
+    'takeover-drill': 'Practice makes perfect — rehearse the critical handover sequence in a safe simulation before you ever need it on the road.',
+    preferences: 'Fine-tune the driving personality — acceleration response, following behavior, and lane positioning calibrated to your comfort threshold.',
 };
 
 const TRUST_MOMENTS_BY_STEP = {
@@ -101,7 +101,7 @@ function tmShield(trustMoments) {
 function renderProfileTablet(host, step, controller, bus) {
     let phase = 1; // 1=Name, 2=Face, 3=Voice
     let recSession = null;
-    let capturedName = '';
+    let capturedName = 'adithya nair';
     let scanningBlocked = false;
     let cameraStream = null;
 
@@ -190,12 +190,11 @@ function renderProfileTablet(host, step, controller, bus) {
         const fieldName = host.querySelector('[data-field-name]');
         const fieldDisplay = host.querySelector('[data-field-display]');
 
-        if (capturedName) {
-            nameFields.style.display = 'flex';
-            fieldName.value = capitalizeName(capturedName);
-            fieldDisplay.value = capitalizeName(capturedName.split(' ')[0] || capturedName);
-            promptEl.textContent = `Welcome, ${capitalizeName(capturedName)}!`;
-        }
+        // Always show pre-filled name for demo
+        nameFields.style.display = 'flex';
+        fieldName.value = capitalizeName(capturedName);
+        fieldDisplay.value = capitalizeName(capturedName.split(' ')[0] || capturedName);
+        promptEl.textContent = `Welcome, ${capitalizeName(capturedName)}!`;
 
         async function activateMic() {
             if (recSession) return;
@@ -218,19 +217,17 @@ function renderProfileTablet(host, step, controller, bus) {
                 onInterim: (t) => { heardEl.textContent = `"${t}"`; },
                 onFinal: (t) => {
                     heardEl.textContent = `"${t}"`;
-                    if (!capturedName) {
-                        capturedName = t;
-                        const capped = capitalizeName(capturedName);
-                        promptEl.textContent = `Welcome, ${capped}!`;
-                        nameFields.style.display = 'flex';
-                        fieldName.value = capped;
-                        fieldDisplay.value = capitalizeName(capturedName.split(' ')[0] || capturedName);
-                        // TTS greeting
-                        if ('speechSynthesis' in window) {
-                            const u = new SpeechSynthesisUtterance(`Welcome, ${capped}. Let's set up your profile.`);
-                            u.rate = 0.95;
-                            window.speechSynthesis.speak(u);
-                        }
+                    capturedName = t;
+                    const capped = capitalizeName(capturedName);
+                    promptEl.textContent = `Welcome, ${capped}!`;
+                    nameFields.style.display = 'flex';
+                    fieldName.value = capped;
+                    fieldDisplay.value = capitalizeName(capturedName.split(' ')[0] || capturedName);
+                    // TTS greeting
+                    if ('speechSynthesis' in window) {
+                        const u = new SpeechSynthesisUtterance(`Welcome, ${capped}. Let's set up your profile.`);
+                        u.rate = 0.95;
+                        window.speechSynthesis.speak(u);
                     }
                 },
                 onError: (e) => {
@@ -251,44 +248,27 @@ function renderProfileTablet(host, step, controller, bus) {
         const status = host.querySelector('[data-face-status]');
         scanningBlocked = true;
 
-        async function startCamera() {
-            try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = cameraStream;
-                status.textContent = 'Scanning face…';
-                ring.classList.add('is-scanning');
+        // Demo mode: skip real camera, simulate scan immediately
+        if (video) video.style.display = 'none';
+        status.textContent = 'Scanning face…';
+        ring.classList.add('is-scanning');
 
-                // Simulate scan (~3s)
-                setTimeout(() => {
-                    ring.classList.remove('is-scanning');
-                    ring.classList.add('is-done');
-                    check.classList.remove('hidden');
-                    status.textContent = 'Face registered ✓';
-                    scanningBlocked = false;
-                    // HUD alert
-                    const alertEl = document.getElementById('hud-alert');
-                    const alertText = document.getElementById('hud-alert-text');
-                    if (alertEl && alertText) {
-                        alertText.textContent = 'Face Registered';
-                        alertEl.classList.remove('hidden');
-                        setTimeout(() => alertEl.classList.add('hidden'), 2500);
-                    }
-                    // Stop camera
-                    if (cameraStream) {
-                        cameraStream.getTracks().forEach(t => t.stop());
-                        cameraStream = null;
-                    }
-                }, 3000);
-            } catch (err) {
-                status.textContent = 'Camera denied — skipping face scan.';
-                video.style.display = 'none';
-                ring.classList.add('is-done');
-                check.classList.remove('hidden');
-                check.textContent = '⚠';
-                scanningBlocked = false;
+        // Simulate scan (~2s for demo)
+        setTimeout(() => {
+            ring.classList.remove('is-scanning');
+            ring.classList.add('is-done');
+            check.classList.remove('hidden');
+            status.textContent = 'Face registered ✓';
+            scanningBlocked = false;
+            // HUD alert
+            const alertEl = document.getElementById('hud-alert');
+            const alertText = document.getElementById('hud-alert-text');
+            if (alertEl && alertText) {
+                alertText.textContent = 'Face Registered';
+                alertEl.classList.remove('hidden');
+                setTimeout(() => alertEl.classList.add('hidden'), 2500);
             }
-        }
-        startCamera();
+        }, 2000);
     }
 
     function wirePhase3() {

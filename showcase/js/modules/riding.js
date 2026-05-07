@@ -361,6 +361,16 @@ function renderProductiveTablet(host, step, controller, bus) {
                     <span class="t-caption">15 min</span>
                 </article>
             </section>
+
+            <!-- Tour Guide Section -->
+            <section aria-label="Tour guide" data-tour-guide-section style="padding:var(--sp-4);background:var(--color-surface-subtle);border-radius:12px;display:flex;flex-direction:column;gap:var(--sp-3);">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <p class="t-caption" style="color:var(--color-accent-primary);font-weight:700;">🗺️ Tour Guide Active</p>
+                    <span style="font-size:11px;padding:2px 8px;border-radius:999px;background:var(--color-accent-soft);color:var(--color-accent-primary);font-weight:600;">LIVE</span>
+                </div>
+                <div data-poi-cards style="display:flex;flex-direction:column;gap:var(--sp-2);min-height:60px;"></div>
+            </section>
+
             <div class="autonomy-budget-bar" data-budget-bar>
                 <div class="autonomy-budget-fill" data-budget-fill style="width:100%;"></div>
             </div>
@@ -374,6 +384,57 @@ function renderProductiveTablet(host, step, controller, bus) {
         </div>
     `;
     host.querySelector('[data-cta="next"]').addEventListener('click', () => controller.advance('riding-productive-next'));
+
+    // Tour Guide POI cards — appear sequentially every 3 seconds
+    const tourPOIs = [
+        { icon: '🏛', name: 'Golden Gate Bridge', desc: 'Iconic suspension bridge, 2.7 km span', distance: '0.5 km ahead' },
+        { icon: '🌳', name: 'Presidio Park', desc: 'Former military post, now national park', distance: '1.2 km ahead' },
+        { icon: '🎨', name: 'Palace of Fine Arts', desc: 'Beaux-Arts rotunda, built 1915', distance: '2.4 km ahead' },
+    ];
+    const poiCardsContainer = host.querySelector('[data-poi-cards]');
+    const tourTimers = [];
+
+    tourPOIs.forEach((poi, i) => {
+        const timer = setTimeout(() => {
+            if (!poiCardsContainer) return;
+            const card = document.createElement('div');
+            card.style.cssText = 'display:flex;gap:var(--sp-3);align-items:center;padding:var(--sp-2) var(--sp-3);background:var(--color-surface-elevated);border-radius:8px;border:1px solid var(--color-border-subtle);opacity:0;transform:translateY(8px);transition:opacity 0.4s ease,transform 0.4s ease;';
+            card.innerHTML = `
+                <span style="font-size:22px;">${poi.icon}</span>
+                <div style="flex:1;min-width:0;">
+                    <p style="font-weight:600;font-size:13px;">${poi.name}</p>
+                    <p class="t-caption" style="color:var(--color-text-secondary);">${poi.desc}</p>
+                </div>
+                <span class="t-caption" style="white-space:nowrap;color:var(--color-accent-primary);">${poi.distance}</span>
+            `;
+            poiCardsContainer.appendChild(card);
+            // Trigger fade-in animation
+            requestAnimationFrame(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            });
+
+            // Show approaching notification on first POI
+            if (i === 0) {
+                const approachNotice = document.createElement('p');
+                approachNotice.style.cssText = 'font-size:12px;color:var(--color-accent-primary);font-weight:600;margin-bottom:var(--sp-1);opacity:0;transition:opacity 0.3s ease;';
+                approachNotice.textContent = `Approaching: ${poi.name} — ${poi.distance}`;
+                poiCardsContainer.insertBefore(approachNotice, poiCardsContainer.firstChild);
+                requestAnimationFrame(() => { approachNotice.style.opacity = '1'; });
+            }
+        }, i * 3000);
+        tourTimers.push(timer);
+    });
+
+    // Also add Tour Guide Active indicator to cluster
+    const clusterPill = document.querySelector('[data-cluster-pill]');
+    if (clusterPill) {
+        const tourIndicator = document.createElement('span');
+        tourIndicator.className = 'cluster-alert-pill is-success';
+        tourIndicator.style.cssText = 'margin-left:var(--sp-2);font-size:10px;';
+        tourIndicator.textContent = '🗺️ TOUR GUIDE';
+        clusterPill.parentNode.appendChild(tourIndicator);
+    }
 
     // Smart Distraction Nudge — 8-second timer (Task 9)
     const nudgeTimer = setTimeout(() => {
@@ -413,7 +474,7 @@ function renderProductiveTablet(host, step, controller, bus) {
     }, 8000);
 
     // Cancel timer on step change (Task 9.6)
-    const stopNudge = bus.on('stepWillChange', () => { clearTimeout(nudgeTimer); stopNudge(); });
+    const stopNudge = bus.on('stepWillChange', () => { clearTimeout(nudgeTimer); tourTimers.forEach(t => clearTimeout(t)); stopNudge(); });
 }
 
 // ── Exports ──────────────────────────────────────────────────────────

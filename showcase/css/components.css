@@ -3842,3 +3842,26 @@
         transform: translateY(0) scale(1);
     }
 }
+
+
+/* ── Traffic Reroute Animation ─────────────────────────────────────────── */
+
+.traffic-segment-pulse {
+    animation: traffic-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes traffic-pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 0.9;
+    }
+}
+
+.traffic-reroute-notification {
+    animation: hud-alert-in var(--motion-dur-step) var(--motion-ease-forward);
+}
