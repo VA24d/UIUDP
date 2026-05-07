@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroDrive — Setup & Simulator</title>
+    <!-- First-time onboarding + driving simulator combined for GitHub Pages (single entry: this file). -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body.combined-site {
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 100vh;
+        }
+
+        .site-nav-aerodrive {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 10px 16px;
+            background: linear-gradient(180deg, rgba(12, 12, 14, 0.98), rgba(6, 6, 8, 0.98));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .site-nav-aerodrive .brand-title {
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-right: 8px;
+        }
+
+        .site-nav-aerodrive button {
+            font-family: var(--font-main, Inter, sans-serif);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary, #94a3b8);
+            transition: 0.2s ease;
+        }
+
+        .site-nav-aerodrive button:hover {
+            border-color: rgba(255, 255, 255, 0.22);
+            color: #fff;
+        }
+
+        .site-nav-aerodrive button.active {
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.4);
+            color: var(--accent-blue, #38bdf8);
+        }
+
+        /* Onboarding cockpit height below nav bar */
+        body.combined-site .pane-onboarding .cockpit-layout {
+            height: calc(100vh - 52px);
+            min-height: 420px;
+            width: 100%;
+            max-width: 100vw;
+        }
+
+        .pane-onboarding.hidden,
+        .pane-simulator.hidden {
+            display: none !important;
+        }
+
+        .pane-simulator {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pane-simulator iframe {
+            flex: 1;
+            width: 100%;
+            min-height: calc(100vh - 52px);
+            border: 0;
+            display: block;
+            background: #000;
+        }
+    </style>
+</head>
+
+<body class="combined-site">
+
+    <header class="site-nav-aerodrive" role="navigation" aria-label="App mode">
+        <span class="brand-title">AeroDrive</span>
+        <button type="button" id="nav-btn-setup" class="active">First-time setup</button>
+        <button type="button" id="nav-btn-sim">Driving simulator</button>
+    </header>
+
+    <div id="pane-onboarding" class="pane-onboarding" aria-labelledby="nav-btn-setup">
+        <!-- onboarding cockpit (loads steps into #module-container) -->
+        <div class="cockpit-layout">
+
+            <div id="central-display" class="central-display">
+                <aside class="sidebar">
+                    <div class="logo">
+                        <div class="logo-icon"><i class="ph-fill ph-steering-wheel"></i></div>
+                        <span>AeroDrive</span>
+                    </div>
+                    <ul class="nav-steps">
+                        <li class="active" id="nav-step-1">
+                            <div class="nav-icon"><i class="ph-fill ph-user"></i></div>
+                            <span>Profile</span>
+                        </li>
+                        <li id="nav-step-2">
+                            <div class="nav-icon"><i class="ph-fill ph-armchair"></i></div>
+                            <span>Comfort</span>
+                        </li>
+                        <li id="nav-step-3">
+                            <div class="nav-icon"><i class="ph-fill ph-map-pin"></i></div>
+                            <span>Locations</span>
+                        </li>
+                        <li id="nav-step-4">
+                            <div class="nav-icon"><i class="ph-fill ph-student"></i></div>
+                            <span>Learn</span>
+                        </li>
+                        <li id="nav-step-5">
+                            <div class="nav-icon"><i class="ph-fill ph-warning-circle"></i></div>
+                            <span>Take-Over</span>
+                        </li>
+                        <li id="nav-step-6">
+                            <div class="nav-icon"><i class="ph-fill ph-sliders-horizontal"></i></div>
+                            <span>Tuning</span>
+                        </li>
+                    </ul>
+                </aside>
+                <main class="content-area">
+                    <div id="module-container" class="module-container">
+                        <!-- Step content loaded dynamically from steps/stepN.html -->
+                    </div>
+                </main>
+                <div class="voice-bar" id="voice-bar">
+                    <button class="mic-toggle" id="mic-toggle" onclick="toggleMic()">
+                        <i class="ph-fill ph-microphone"></i>
+                    </button>
+                    <i class="ph-fill ph-speaker-high" id="speaker-icon"></i>
+                    <div class="voice-info">
+                        <span class="voice-text" id="voice-text">Mic off — tap to listen</span>
+                        <span class="voice-heard" id="voice-heard"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="hud" class="hud-container">
+                <div class="hud-top">
+                    <div class="gear-indicator">
+                        <span class="gear active">P</span>
+                        <span class="gear">R</span>
+                        <span class="gear">N</span>
+                        <span class="gear">D</span>
+                    </div>
+                    <div class="system-status text-green" id="hud-status">
+                        <i class="ph-fill ph-check-circle"></i> Diagnostics OK
+                    </div>
+                </div>
+
+                <div class="hud-context" id="hud-context">
+                    <span class="hud-context-label" id="hud-context-label">INITIALIZING</span>
+                    <div class="hud-progress">
+                        <div class="hud-progress-fill" id="hud-progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="hud-center">
+                    <div class="battery-status">
+                        <i class="ph-fill ph-battery-full" style="font-size: 28px;"></i>
+                        <h2>85%</h2>
+                        <small>320 mi Range</small>
+                    </div>
+
+                    <div id="hud-alert" class="hud-alert hidden">
+                        <i class="ph-fill ph-info"></i>
+                        <h2 id="hud-alert-text">Calibration Updated</h2>
+                    </div>
+                </div>
+
+                <div class="hud-bottom">
+                    <div class="g-force-meter">
+                        <label>Drive Profile</label>
+                        <div class="bar-container">
+                            <div id="hud-accel-bar" class="bar" style="width: 50%;"></div>
+                        </div>
+                    </div>
+                    <div class="following-distance">
+                        <label>Safety Margin</label>
+                        <div class="dots" id="hud-dist-dots">
+                            <div class="dot active"></div>
+                            <div class="dot active"></div>
+                            <div class="dot active"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cockpit-annotation" id="cockpit-annotation">
+                Initialising AeroDrive Onboarding Simulation...
+            </div>
+
+        </div>
+    </div>
+
+    <div id="pane-simulator" class="pane-simulator hidden" aria-labelledby="nav-btn-sim">
+        <!-- Isolated iframe = no duplicate IDs with onboarding; simulator uses driving_prototype assets -->
+        <iframe id="ifr-driving-simulator" title="AeroDrive driving simulator" loading="lazy"
+            src="driving_prototype/index.html"></iframe>
+    </div>
+
+    <script>
+        (function () {
+            var bSetup = document.getElementById('nav-btn-setup');
+            var bSim = document.getElementById('nav-btn-sim');
+            var paneOn = document.getElementById('pane-onboarding');
+            var paneSi = document.getElementById('pane-simulator');
+            var onboardingActive = true;
+            
+            function showSetup() {
+                paneOn.classList.remove('hidden');
+                paneSi.classList.add('hidden');
+                bSetup.classList.add('active');
+                bSim.classList.remove('active');
+                onboardingActive = true;
+                // Resume onboarding voice if it was active
+                if (window.isListening && window.recognition) {
+                    try { window.recognition.start(); } catch (e) { }
+                }
+            }
+            
+            function showSim() {
+                paneOn.classList.add('hidden');
+                paneSi.classList.remove('hidden');
+                bSim.classList.add('active');
+                bSetup.classList.remove('active');
+                onboardingActive = false;
+                
+                // Call centralized cleanup in script.js
+                if (typeof window.stopOnboardingActivity === 'function') {
+                    window.stopOnboardingActivity();
+                }
+                
+                // Stop any onboarding audio UI
+                const voiceBar = document.getElementById('voice-bar');
+                if (voiceBar) voiceBar.classList.remove('speaking');
+            }
+
+            bSetup.addEventListener('click', showSetup);
+            bSim.addEventListener('click', showSim);
+            if (typeof window.location.search !== 'undefined' && window.location.search.indexOf('sim=1') !== -1) showSim();
+
+            // Expose state for script.js to check
+            window.isOnboardingActive = function () { return onboardingActive; };
+        })();
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>

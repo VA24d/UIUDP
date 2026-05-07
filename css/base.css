@@ -1,0 +1,167 @@
+/* Base — reset, typography, focus rings. See .kiro/specs/unified-av-showcase/design.md */
+/* Inter is loaded in index.html via the Google Fonts <link> so it is available on first paint. */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow: hidden;
+}
+
+/* Subtle scrollbars for panels */
+.cluster::-webkit-scrollbar,
+.tablet::-webkit-scrollbar {
+    width: 4px;
+}
+
+.cluster::-webkit-scrollbar-thumb,
+.tablet::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.cluster::-webkit-scrollbar-track,
+.tablet::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+body {
+    font-family: var(--font-family-sans);
+    font-size: var(--font-body-size);
+    line-height: var(--font-body-lh);
+    font-weight: 300;
+    color: var(--color-text-primary);
+    background: var(--color-surface-page);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ol,
+ul,
+figure,
+blockquote {
+    margin: 0;
+}
+
+ol,
+ul {
+    padding: 0;
+    list-style: none;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+img,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+a {
+    color: var(--color-accent-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+code,
+kbd,
+samp,
+pre {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-mono-size);
+    line-height: var(--font-mono-lh);
+}
+
+/* Global focus ring — never removed. */
+:focus-visible {
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* Visually hidden (screen-reader-only) — used by the aria-live status region. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Typography helpers for stage content. */
+.t-display {
+    font-size: var(--font-display-size);
+    line-height: var(--font-display-lh);
+    font-weight: var(--font-display-weight);
+    letter-spacing: -0.01em;
+}
+
+.t-heading {
+    font-size: var(--font-heading-size);
+    line-height: var(--font-heading-lh);
+    font-weight: var(--font-heading-weight);
+    letter-spacing: -0.01em;
+}
+
+.t-subhead {
+    font-size: var(--font-subhead-size);
+    line-height: var(--font-subhead-lh);
+    font-weight: var(--font-subhead-weight);
+    color: var(--color-text-secondary);
+}
+
+.t-body {
+    font-size: var(--font-body-size);
+    line-height: var(--font-body-lh);
+    font-weight: var(--font-body-weight);
+}
+
+.t-caption {
+    font-size: var(--font-caption-size);
+    line-height: var(--font-caption-lh);
+    font-weight: var(--font-caption-weight);
+    letter-spacing: var(--font-caption-tracking);
+    text-transform: var(--font-caption-transform);
+    color: var(--color-text-secondary);
+}
+
+.t-mono {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-mono-size);
+    line-height: var(--font-mono-lh);
+    font-weight: var(--font-mono-weight);
+}
