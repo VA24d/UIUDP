@@ -152,23 +152,26 @@ function renderUnmappedTablet(host, step, controller, bus) {
         if (slot) {
             slot.style.background = 'rgba(185,28,28,.06)';
             slot.style.border = '2px solid var(--color-critical)';
+            slot.style.padding = 'var(--sp-5)';
             slot.innerHTML = `
-                <p class="t-caption" style="color:var(--color-critical);font-weight:700;">TAKE MANUAL CONTROL</p>
-                <p style="margin-top:var(--sp-2);">Zone not mapped — construction detected.</p>
-                <div class="takeover-countdown-ring" data-countdown-ring>
-                    <svg viewBox="0 0 80 80">
-                        <circle cx="40" cy="40" r="34" class="countdown-track"/>
-                        <circle cx="40" cy="40" r="34" class="countdown-progress takeover-ring-anim"/>
-                    </svg>
-                    <span class="countdown-number">10</span>
+                <p class="t-caption" style="color:var(--color-critical);font-weight:700;text-align:center;letter-spacing:0.08em;">⚠ TAKE MANUAL CONTROL</p>
+                <p style="margin-top:var(--sp-2);text-align:center;color:var(--color-text-secondary);">Zone not mapped — construction detected ahead.</p>
+                <div style="display:flex;align-items:center;justify-content:center;gap:var(--sp-5);margin-top:var(--sp-4);">
+                    <div class="tactile-wheel tactile-pulse-1hz" data-tactile-wheel style="font-size:2rem;">☸</div>
+                    <div class="takeover-countdown-ring" data-countdown-ring>
+                        <svg viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="34" class="countdown-track"/>
+                            <circle cx="40" cy="40" r="34" class="countdown-progress takeover-ring-anim"/>
+                        </svg>
+                        <span class="countdown-number">10</span>
+                    </div>
                 </div>
-                <div class="tactile-wheel tactile-pulse-1hz" data-tactile-wheel>☸</div>
-                <div class="drill-grip-area" style="margin-top:var(--sp-3);">
+                <div class="drill-grip-area" style="margin-top:var(--sp-4);max-width:280px;margin-left:auto;margin-right:auto;">
                     <button type="button" class="grip-button" data-grip-btn>
                         <span class="grip-fill" data-grip-fill style="width:0%"></span>
                         <span class="grip-label">GRIP STEERING WHEEL</span>
                     </button>
-                    <p class="t-caption cluster-context">Press and hold (or spacebar)</p>
+                    <p class="t-caption cluster-context" style="text-align:center;margin-top:var(--sp-2);">Press and hold (or spacebar)</p>
                 </div>
             `;
 
