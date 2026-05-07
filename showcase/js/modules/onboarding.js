@@ -73,6 +73,23 @@ function renderClusterFor(slug, host) {
         <h2 class="t-subhead" data-cluster-label>${ONBOARDING_TITLES[slug]}</h2>
         <p class="t-caption cluster-context" data-cluster-status>${LABELS[slug]} · IN PROGRESS</p>
         <div class="cluster-pips" aria-hidden="true">${pips}</div>
+        <div style="margin-top:var(--sp-4);padding-top:var(--sp-3);border-top:1px solid var(--color-border-subtle);">
+            <div style="display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-3);">
+                <div style="display:flex;gap:var(--sp-1);">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;font-weight:700;font-size:11px;color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.04);">P</span>
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;font-weight:700;font-size:11px;color:#fff;background:var(--color-accent-primary);box-shadow:0 0 6px rgba(43,76,255,0.3);">P</span>
+                </div>
+                <span style="font-size:11px;color:var(--color-success);font-weight:600;">✓ Diagnostics OK</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-2);">
+                <span style="font-size:20px;color:var(--color-success);">🔋</span>
+                <span style="font-size:18px;font-weight:700;">85%</span>
+                <span style="font-size:11px;color:var(--color-text-secondary);">320 mi</span>
+            </div>
+            <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden;">
+                <div style="height:100%;width:${((idx + 1) / 6 * 100).toFixed(0)}%;background:var(--color-accent-primary);border-radius:2px;transition:width 0.4s ease;"></div>
+            </div>
+        </div>
     `;
 }
 

@@ -47,10 +47,33 @@ function baseCluster(slug, host, alertClass = 'is-success', alertText = 'NORMAL'
             <span class="cluster-speed">${s.speedKph}</span>
             <span class="t-caption">km/h</span>
         </div>
-        <div style="margin-top:var(--sp-4);">
+        <div style="margin-top:var(--sp-3);">
             <span class="cluster-alert-pill ${alertClass}" data-alert>${alertText}</span>
         </div>
         ${extra}
+        <div style="margin-top:var(--sp-4);padding-top:var(--sp-3);border-top:1px solid var(--color-border-subtle);">
+            <div style="display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-2);">
+                <span style="font-size:18px;color:var(--color-success);">🔋</span>
+                <span style="font-size:16px;font-weight:700;">78%</span>
+                <span style="font-size:11px;color:var(--color-text-secondary);">248 mi</span>
+            </div>
+            <div style="display:flex;gap:var(--sp-3);">
+                <div style="flex:1;">
+                    <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.45);">Drive Profile</span>
+                    <div style="height:4px;border-radius:2px;background:rgba(255,255,255,0.08);margin-top:3px;overflow:hidden;">
+                        <div style="height:100%;width:50%;background:linear-gradient(90deg,var(--color-accent-primary),#60A5FA);border-radius:2px;"></div>
+                    </div>
+                </div>
+                <div>
+                    <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.45);">Safety</span>
+                    <div style="display:flex;gap:3px;margin-top:3px;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:var(--color-success);"></span>
+                        <span style="width:8px;height:8px;border-radius:50%;background:var(--color-success);"></span>
+                        <span style="width:8px;height:8px;border-radius:50%;background:var(--color-success);"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
     `;
 }
 
