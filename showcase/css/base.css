@@ -17,6 +17,24 @@ body {
 html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    overflow: hidden;
+}
+
+/* Subtle scrollbars for panels */
+.cluster::-webkit-scrollbar,
+.tablet::-webkit-scrollbar {
+    width: 4px;
+}
+
+.cluster::-webkit-scrollbar-thumb,
+.tablet::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.cluster::-webkit-scrollbar-track,
+.tablet::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 body {

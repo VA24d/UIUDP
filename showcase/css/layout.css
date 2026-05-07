@@ -2,18 +2,19 @@
 
 .stage {
     display: grid;
-    grid-template-columns: minmax(420px, 5fr) minmax(520px, 7fr);
+    grid-template-columns: minmax(380px, 5fr) minmax(480px, 7fr);
     grid-template-rows: 1fr auto auto auto;
     grid-template-areas:
         "cluster tablet"
         "toasts  toasts"
         "nav     nav"
         "timeline timeline";
-    gap: var(--sp-5);
-    padding: var(--sp-5);
-    padding-bottom: 80px;
+    gap: var(--sp-4);
+    padding: var(--sp-4);
+    padding-bottom: 72px;
     /* Clear the fixed voice bar + cockpit annotation */
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     background: radial-gradient(circle at center, #11141a 0%, #050505 100%);
 }
 
@@ -29,9 +30,9 @@
     border-right: var(--glass-border-side, none);
     border-bottom: var(--glass-border-side, none);
     box-shadow: var(--glass-shadow, var(--elevation-2));
-    padding: var(--sp-5);
-    min-height: 420px;
-    overflow: hidden;
+    padding: var(--sp-4);
+    overflow-y: auto;
+    overflow-x: hidden;
     transition: opacity var(--motion-dur-step) var(--motion-ease-subtle),
         transform var(--motion-dur-step) var(--motion-ease-subtle);
 }
@@ -48,9 +49,9 @@
     border-right: var(--glass-border-side, none);
     border-bottom: var(--glass-border-side, none);
     box-shadow: var(--glass-shadow, var(--elevation-2));
-    padding: var(--sp-5);
-    min-height: 420px;
-    overflow: hidden;
+    padding: var(--sp-4);
+    overflow-y: auto;
+    overflow-x: hidden;
     transition: opacity var(--motion-dur-step) var(--motion-ease-subtle),
         transform var(--motion-dur-step) var(--motion-ease-subtle);
 }
@@ -116,17 +117,23 @@
 @media (max-width: 1100px) {
     .stage {
         grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto auto;
         grid-template-areas:
             "cluster"
             "tablet"
             "toasts"
             "nav"
             "timeline";
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
     }
 
     .cluster,
     .tablet {
-        min-height: 320px;
+        min-height: 300px;
+        max-height: none;
+        overflow-y: visible;
     }
 }
 
